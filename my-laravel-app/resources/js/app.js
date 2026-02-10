@@ -23,33 +23,8 @@ createApp(App)
   .use(vuetify)
   .mount('#app')
 
-  export default {
-    name: 'App',
-    data() {
-      return {
-        currentPage: window.pageData?.currentPage || 'home',
-        pageTitle: window.pageData?.title || 'Homepage',
-        clickCount: 0,
-        darkMode: false,
-        contactForm: {
-          name: '',
-          email: '',
-          message: ''
-        }
-      }
-    },
-  
-    methods: {
-  
-      toggleTheme() {
-        this.darkMode = !this.darkMode
-        document.body.classList.toggle('dark-theme', this.darkMode)
-      },
-  
-      submitContact() {
-        alert(`Thank you ${this.contactForm.name}! Your message has been sent.`)
-        // Reset form
-        this.contactForm = { name: '', email: '', message: '' }
-      }
-    }
-  }
+// Apply persisted dark mode before Vue mounts so all pages match
+const saved = localStorage.getItem('darkMode')
+if (saved === 'true') {
+  document.body.classList.add('dark-theme')
+}
