@@ -1,3 +1,4 @@
-# kvalifikacijas-darbs
-## autors: Daniels Šabovičs
-## kurss: DP3-1 
+# Kvalifikācijas darbs
+## Autors: Daniels Šabovičs
+## Kurss: DP3-1 
+
