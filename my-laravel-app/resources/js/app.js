@@ -23,7 +23,6 @@ createApp(App)
   .use(vuetify)
   .mount('#app')
 
-// Apply persisted dark mode before Vue mounts so all pages match
 const saved = localStorage.getItem('darkMode')
 if (saved === 'true') {
   document.body.classList.add('dark-theme')

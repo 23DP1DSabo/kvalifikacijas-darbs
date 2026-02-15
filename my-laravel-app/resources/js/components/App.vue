@@ -85,7 +85,6 @@ export default {
   name: 'App',
   data() {
     return {
-      // Get page data from Laravel (passed via window.pageData)
       currentPage: window.pageData?.currentPage || 'home',
       pageTitle: window.pageData?.title || 'Homepage',
       clickCount: 0,
@@ -107,7 +106,6 @@ export default {
 
     submitContact() {
       alert(`Thank you ${this.contactForm.name}! Your message has been sent.`)
-      // Reset form
       this.contactForm = { name: '', email: '', message: '' }
     }
   }
