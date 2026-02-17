@@ -1,7 +1,7 @@
 <template>
   <div id="simple-app">
 
-
+<!--Header-->
     <header class="site-header">
         <h1 class="site-title">TaskForge</h1>
       <nav class="navigation">
@@ -13,7 +13,7 @@
       </nav>
     </header>
 
-
+<!--Homepage-->
     <main class="main-content" v-if="currentPage === 'home'">
       <section class="hero-section site-section">
       <h1 class="site-title">Galvenā lapa</h1>
@@ -32,6 +32,7 @@
           <a class="card-button" href="...">Pāriet</a>
         </div>
 
+<!--Cards-->
         <div class="card" id="task-card">
           <div class="card-in-card">
             <h2>Mērķu plānotājs</h2>
@@ -58,6 +59,7 @@
       </section>
     </main>
 
+<!--Forum-->
     <main class="main-content" v-else-if="currentPage === 'forum'">
       <section class="forum-section site-section">
         <h2>Forums</h2>
@@ -75,6 +77,7 @@
       </section>
     </main>
 
+<!--About-page-->
     <main class="main-content" v-else-if="currentPage === 'about'">
       <section class="about-section site-section">
         <h2>Par Mums</h2>
@@ -92,6 +95,8 @@
       </section>
     </main>
 
+
+<!--Contacts-->
     <main class="main-content" v-else-if="currentPage === 'contact'">
       <section class="contact-section site-section">
         <h2>Kontakti</h2>
@@ -104,9 +109,9 @@
           <div class="contact-form">
             <h3>Nosūti ziņojumu!</h3>
             <form @submit.prevent="submitContact">
-              <input type="text" placeholder="Your Name" v-model="contactForm.name" required>
-              <input type="email" placeholder="Your Email" v-model="contactForm.email" required>
-              <textarea placeholder="Your Message" v-model="contactForm.message" required></textarea>
+              <input type="text" placeholder="Jūsu vārds un uzvārds" v-model="contactForm.name" required>
+              <input type="email" placeholder="Jūsu epasts" v-model="contactForm.email" required>
+              <textarea placeholder="Jūsu ziņojums" v-model="contactForm.message" required></textarea>
               <button type="submit" class="action-btn">Sūtīt</button>
             </form>
           </div>
@@ -114,7 +119,7 @@
       </section>
     </main>
 
-
+<!--Footer-->
     <footer id="footer-section">
       <p>&copy; 2026 TaskForge - D. Sabovics. All rights reserved.</p>
     </footer>
@@ -123,46 +128,46 @@
   </div>
 </template>
 
-
+<!--scripts-->
 <script>
-export default {
-  name: 'App',
-  data() {
-    return {
-      currentPage: window.pageData?.currentPage || 'home',
-      pageTitle: window.pageData?.title || 'Homepage',
-      clickCount: 0,
-      darkMode: false,
-      contactForm: {
-        name: '',
-        email: '',
-        message: ''
+  export default {
+    name: 'App',
+    data() {
+      return {
+        currentPage: window.pageData?.currentPage || 'home',
+        pageTitle: window.pageData?.title || 'Homepage',
+        clickCount: 0,
+        darkMode: false,
+        contactForm: {
+          name: '',
+          email: '',
+          message: ''
+        }
       }
-    }
-  },
-
-  methods: {
-    toggleTheme() {
-      this.darkMode = !this.darkMode
-      document.body.classList.toggle('dark-theme', this.darkMode)
-      localStorage.setItem('darkMode', this.darkMode)
     },
 
-    submitContact() {
-      alert(`Thank you ${this.contactForm.name}! Your message has been sent.`)
-      this.contactForm = { name: '', email: '', message: '' }
-    }
-  },
+    methods: {
+      toggleTheme() {
+        this.darkMode = !this.darkMode
+        document.body.classList.toggle('dark-theme', this.darkMode)
+        localStorage.setItem('darkMode', this.darkMode)
+      },
 
-  mounted() {
-    const saved = localStorage.getItem('darkMode')
-    if (saved === 'true') {
-      this.darkMode = true
-      document.body.classList.add('dark-theme')
-    } else {
-      this.darkMode = false
-      document.body.classList.remove('dark-theme')
+      submitContact() {
+        alert(`Thank you ${this.contactForm.name}! Your message has been sent.`)
+        this.contactForm = { name: '', email: '', message: '' }
+      }
+    },
+
+    mounted() {
+      const saved = localStorage.getItem('darkMode')
+      if (saved === 'true') {
+        this.darkMode = true
+        document.body.classList.add('dark-theme')
+      } else {
+        this.darkMode = false
+        document.body.classList.remove('dark-theme')
+      }
     }
   }
-}
 </script>
