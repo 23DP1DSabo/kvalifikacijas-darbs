@@ -1,5 +1,7 @@
 <template>
   <div id="simple-app">
+
+
     <header class="site-header">
         <h1 class="site-title">TaskForge</h1>
       <nav class="navigation">
@@ -11,14 +13,48 @@
       </nav>
     </header>
 
+
     <main class="main-content" v-if="currentPage === 'home'">
       <section class="hero-section site-section">
       <h1 class="site-title">Galvenā lapa</h1>
         <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Necessitatibus doloremque sequi nulla inventore blanditiis! Omnis alias doloribus possimus nemo? Blanditiis amet quam libero cum, reprehenderit laudantium corrupti obcaecati modi ad.</p>
       </section>
-      <section class="description, site-section">
+      <section class="description site-section">
         <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Perferendis odit in quibusdam, enim cumque dolor laudantium sit quod impedit quo, aliquam et quis voluptatem delectus. Quasi facere architecto tenetur adipisci.</p>
         <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Dolorem sit quam reiciendis numquam, dolore necessitatibus excepturi. Exercitationem atque non, ipsum veniam, est laudantium, porro fugiat nulla totam quia asperiores eveniet.</p>
+      </section>
+      <section id="cards">
+        <div class="card" id="pomodoro-card">
+          <div class="card-in-card">
+            <h2>Pomodoro pulkstenis</h2>
+            <p>Strādājiet un atpūtieites pēc noteikta laika grafika.</p>
+          </div>
+          <a class="card-button" href="...">Pāriet</a>
+        </div>
+
+        <div class="card" id="task-card">
+          <div class="card-in-card">
+            <h2>Mērķu plānotājs</h2>
+            <p>Organizējiet savus mērķus ilgtermiņā.</p>
+          </div>
+          <a class="card-button" id="plan-button" href="...">Pāriet</a>
+        </div>
+
+        <div class="card" id="eisenhower-card">
+          <div class="card-in-card">
+            <h2>Eizenhauera matrica</h2>
+            <p>Nosakidrojiet kādus mērķus sasniegt pirms citiem.</p>
+          </div>
+          <a class="card-button" href="...">Pāriet</a>
+        </div>
+
+        <div class="card" id="calendar-card">
+          <div class="card-in-card">
+            <h2>Uzdevumu ķēdes kalendārs</h2>
+            <p>Lieciet atgādinājumus notikumiem vai termiņiem.</p>
+          </div>
+          <a class="card-button" href="...">Pāriet</a>
+        </div>
       </section>
     </main>
 
@@ -77,8 +113,16 @@
         </div>
       </section>
     </main>
+
+
+    <footer id="footer-section">
+      <p>&copy; 2026 TaskForge - D. Sabovics. All rights reserved.</p>
+    </footer>
+
+
   </div>
 </template>
+
 
 <script>
 export default {
@@ -107,6 +151,17 @@ export default {
     submitContact() {
       alert(`Thank you ${this.contactForm.name}! Your message has been sent.`)
       this.contactForm = { name: '', email: '', message: '' }
+    }
+  },
+
+  mounted() {
+    const saved = localStorage.getItem('darkMode')
+    if (saved === 'true') {
+      this.darkMode = true
+      document.body.classList.add('dark-theme')
+    } else {
+      this.darkMode = false
+      document.body.classList.remove('dark-theme')
     }
   }
 }
