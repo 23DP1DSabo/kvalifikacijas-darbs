@@ -140,7 +140,8 @@ section {
 
 .hero-section {
   background-color: #ffffff;
-  border-top: 3px solid #ffffff;
+  border-top: 3px solid transparent;
+  border-color: transparent;
   display: flex;
   justify-content: center;
   align-items: center;
