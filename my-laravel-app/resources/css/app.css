@@ -178,7 +178,60 @@ section {
 }
 
 
-/*-----Forum------------------------------*/
+/*-----Pomodoro---------------------------*/
+
+.pomodoro-content {
+  display: flex;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.pomodoro-sections {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.timer-display {
+  flex: 1;
+  font-size: 48px;
+  font-weight: bold;
+  text-align: center;
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+
+/*-----Task Board-------------------------*/
+
+.taskboard-section {
+  display: flex;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+
+/*-----Eisenhower Matrix-----------------*/
+
+.matrix-section {
+  display: flex;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+
+/*-----Calendar---------------------------*/
+
+calendar-section {
+  display: flex;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+
+/*-----Features...?-----------------------*/
 
 .features-grid {
   display: flex;

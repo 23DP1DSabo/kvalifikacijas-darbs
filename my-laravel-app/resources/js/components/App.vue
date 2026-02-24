@@ -27,35 +27,35 @@
       <section id="cards">
         <div class="card" id="pomodoro-card">
           <div class="card-in-card">
-            <h2>Pomodoro pulkstenis</h2>
+            <h2>Pomodoro Pulkstenis</h2>
             <p>Strādājiet un atpūtieites pēc noteikta laika grafika.</p>
           </div>
-          <a class="card-button" href="...">Pāriet</a>
+          <a class="card-button" href="/pomodoro" :class="{ active: currentPage === 'pomodoro' }">Pāriet</a>
         </div>
 
 <!--Cards-->
         <div class="card" id="task-card">
           <div class="card-in-card">
-            <h2>Mērķu plānotājs</h2>
+            <h2>Mērķu Plānotājs</h2>
             <p>Organizējiet savus mērķus ilgtermiņā.</p>
           </div>
-          <a class="card-button" id="plan-button" href="...">Pāriet</a>
+          <a class="card-button" id="plan-button" href="/taskboard" :class="{ active: currentPage === 'taskboard' }">Pāriet</a>
         </div>
 
         <div class="card" id="eisenhower-card">
           <div class="card-in-card">
-            <h2>Eizenhauera matrica</h2>
+            <h2>Eizenhauera Matrica</h2>
             <p>Nosakidrojiet kādus mērķus sasniegt pirms citiem.</p>
           </div>
-          <a class="card-button" href="...">Pāriet</a>
+          <a class="card-button" href="/matrix" :class="{ active: currentPage === 'matrix' }">Pāriet</a>
         </div>
 
         <div class="card" id="calendar-card">
           <div class="card-in-card">
-            <h2>Uzdevumu ķēdes kalendārs</h2>
+            <h2>Uzdevumu Kalendārs</h2>
             <p>Lieciet atgādinājumus notikumiem vai termiņiem.</p>
           </div>
-          <a class="card-button" href="...">Pāriet</a>
+          <a class="card-button" href="/calendar" :class="{ active: currentPage === 'calendar' }">Pāriet</a>
         </div>
       </section>
     </main>
@@ -138,58 +138,27 @@
       <section class="taskboard-section site-section">
         <h2>Uzdevumu Dēlis</h2>
         <div class="contact-content">
-          <div class="contact-info">
-            <h3>Sazinies ar autoru!</h3>
-            <p><strong>Epasts:</strong> a230158ds@rvt.lv</p>
-            <p><strong>Tālrunis:</strong> (+371) 28 105 787</p>
-          </div>
-          <div class="contact-form">
-            <h3>Nosūti ziņojumu!</h3>
-            <form @submit.prevent="submitContact">
-              <input type="text" placeholder="Jūsu vārds un uzvārds" v-model="contactForm.name" required>
-              <input type="email" placeholder="Jūsu epasts" v-model="contactForm.email" required>
-              <textarea placeholder="Jūsu ziņojums" v-model="contactForm.message" required></textarea>
-              <button type="submit" class="action-btn">Sūtīt</button>
-            </form>
-          </div>
+
         </div>
       </section>
   </main>
 
 <!--Eisenhower matrix-->
     <main class="main-content" v-else-if="currentPage === 'matrix'">
-      <section class="contact-section site-section">
+      <section class="matrix-section site-section">
         <h2>Eizenhauera Matrica</h2>
         <div class="contact-content">
-          <div class="contact-info">
-          </div>
-          <div class="contact-form">
-            <h3>Nosūti ziņojumu!</h3>
-            <form @submit.prevent="submitContact">
-              <input type="text" placeholder="Jūsu vārds un uzvārds" v-model="contactForm.name" required>
-              <input type="email" placeholder="Jūsu epasts" v-model="contactForm.email" required>
-              <textarea placeholder="Jūsu ziņojums" v-model="contactForm.message" required></textarea>
-              <button type="submit" class="action-btn">Sūtīt</button>
-            </form>
-          </div>
+      
         </div>
       </section>
     </main>
 
 <!--Calendar-->
     <main class="main-content" v-else-if="currentPage === 'calendar'">
-      <section class="contact-section site-section">
+      <section class="calendar-section site-section">
         <h2>Kalendārs</h2>
         <div class="contact-content">
-          <div class="contact-form">
-            <h3>Nosūti ziņojumu!</h3>
-            <form @submit.prevent="submitContact">
-              <input type="text" placeholder="Jūsu vārds un uzvārds" v-model="contactForm.name" required>
-              <input type="email" placeholder="Jūsu epasts" v-model="contactForm.email" required>
-              <textarea placeholder="Jūsu ziņojums" v-model="contactForm.message" required></textarea>
-              <button type="submit" class="action-btn">Sūtīt</button>
-            </form>
-          </div>
+          
         </div>
       </section>
     </main>
