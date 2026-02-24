@@ -6,7 +6,7 @@
         
         <title>Laravel 12 with Vue 3</title>
 
-        <!-- Styles / Scripts -->
+        <!----- Styles / Scripts ----->
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
             @vite(['resources/css/app.css', 'resources/js/app.js'])
         @else

@@ -6,7 +6,7 @@
 
         <title>About Us</title>
 
-        <!-- Styles / Scripts -->
+        <!----- Styles / Scripts ----->
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
             @vite(['resources/css/app.css', 'resources/js/app.js'])
         @else
@@ -19,7 +19,6 @@
         <div id="app"></div>
 
         <script>
-            // Pass page data to Vue
             window.pageData = {
                 currentPage: 'about',
                 title: 'About project'

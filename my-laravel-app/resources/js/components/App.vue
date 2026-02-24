@@ -1,7 +1,7 @@
 <template>
   <div id="simple-app">
 
-<!--Header-->
+<!-----Header----->
     <header class="site-header">
         <h1 class="site-title">TaskForge</h1>
       <nav class="navigation">
@@ -13,6 +13,7 @@
       </nav>
     </header>
 
+<!-----Basics----->
 <!--Homepage-->
     <main class="main-content" v-if="currentPage === 'home'">
       <section class="hero-section site-section">
@@ -95,7 +96,6 @@
       </section>
     </main>
 
-
 <!--Contacts-->
     <main class="main-content" v-else-if="currentPage === 'contact'">
       <section class="contact-section site-section">
@@ -119,7 +119,83 @@
       </section>
     </main>
 
-<!--Footer-->
+<!-----Interactive tools----->
+<!--Pomodoro clock-->
+    <main class="main-content" v-else-if="currentPage === 'pomodoro'">
+      <section class="pomodoro-section site-section">
+        <h2>Pomodoro Pulkstenis</h2>
+        <div class="pomodoro-content">
+          <div class="timer-display">{{ formatTime(pomodoroTime) }}</div>
+          <button @click="startPomodoro" class="action-btn">Start</button>
+          <button @click="pausePomodoro" class="action-btn">Pause</button>
+          <button @click="resetPomodoro" class="action-btn">Reset</button>
+        </div>
+      </section>
+    </main>
+
+<!--Task board-->
+    <main class="main-content" v-else-if="currentPage === 'taskboard'">
+      <section class="taskboard-section site-section">
+        <h2>Uzdevumu Dēlis</h2>
+        <div class="contact-content">
+          <div class="contact-info">
+            <h3>Sazinies ar autoru!</h3>
+            <p><strong>Epasts:</strong> a230158ds@rvt.lv</p>
+            <p><strong>Tālrunis:</strong> (+371) 28 105 787</p>
+          </div>
+          <div class="contact-form">
+            <h3>Nosūti ziņojumu!</h3>
+            <form @submit.prevent="submitContact">
+              <input type="text" placeholder="Jūsu vārds un uzvārds" v-model="contactForm.name" required>
+              <input type="email" placeholder="Jūsu epasts" v-model="contactForm.email" required>
+              <textarea placeholder="Jūsu ziņojums" v-model="contactForm.message" required></textarea>
+              <button type="submit" class="action-btn">Sūtīt</button>
+            </form>
+          </div>
+        </div>
+      </section>
+  </main>
+
+<!--Eisenhower matrix-->
+    <main class="main-content" v-else-if="currentPage === 'matrix'">
+      <section class="contact-section site-section">
+        <h2>Eizenhauera Matrica</h2>
+        <div class="contact-content">
+          <div class="contact-info">
+          </div>
+          <div class="contact-form">
+            <h3>Nosūti ziņojumu!</h3>
+            <form @submit.prevent="submitContact">
+              <input type="text" placeholder="Jūsu vārds un uzvārds" v-model="contactForm.name" required>
+              <input type="email" placeholder="Jūsu epasts" v-model="contactForm.email" required>
+              <textarea placeholder="Jūsu ziņojums" v-model="contactForm.message" required></textarea>
+              <button type="submit" class="action-btn">Sūtīt</button>
+            </form>
+          </div>
+        </div>
+      </section>
+    </main>
+
+<!--Calendar-->
+    <main class="main-content" v-else-if="currentPage === 'calendar'">
+      <section class="contact-section site-section">
+        <h2>Kalendārs</h2>
+        <div class="contact-content">
+          <div class="contact-form">
+            <h3>Nosūti ziņojumu!</h3>
+            <form @submit.prevent="submitContact">
+              <input type="text" placeholder="Jūsu vārds un uzvārds" v-model="contactForm.name" required>
+              <input type="email" placeholder="Jūsu epasts" v-model="contactForm.email" required>
+              <textarea placeholder="Jūsu ziņojums" v-model="contactForm.message" required></textarea>
+              <button type="submit" class="action-btn">Sūtīt</button>
+            </form>
+          </div>
+        </div>
+      </section>
+    </main>
+
+
+<!-----Footer----->
     <footer id="footer-section">
       <p>&copy; 2026 TaskForge - D. Sabovics. All rights reserved.</p>
     </footer>
