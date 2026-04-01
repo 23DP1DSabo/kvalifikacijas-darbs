@@ -1,58 +1,29 @@
 <template>
   <v-app id="simple-app">
-    <!-----Header----->
+
+
+<!-----Header----->
+
     <v-app-bar class="site-header" elevation="4">
       <v-toolbar-title class="site-title">TaskForge</v-toolbar-title>
       <v-spacer></v-spacer>
       
       <div class="navigation">
-        <v-btn 
-          text 
-          @click="currentPage = 'home'" 
-          :class="{ active: currentPage === 'home' }"
-        >
-          Sākums
-        </v-btn>
-        <v-btn 
-          text 
-          @click="currentPage = 'forum'" 
-          :class="{ active: currentPage === 'forum' }"
-        >
-          Forums
-        </v-btn>
-        <v-btn 
-          text 
-          @click="currentPage = 'about'" 
-          :class="{ active: currentPage === 'about' }"
-        >
-          Par Mums
-        </v-btn>
-        <v-btn 
-          text 
-          @click="currentPage = 'contact'" 
-          :class="{ active: currentPage === 'contact' }"
-        >
-          Kontakti
-        </v-btn>
-        <v-btn 
-          icon 
-          @click="toggleTheme"
-          :title="darkMode ? 'Gaisma' : 'Tumsa'"
-        >
+        <v-btn text @click="currentPage = 'home'" :class="{ active: currentPage === 'home' }">Sākums</v-btn>
+        <v-btn text @click="currentPage = 'forum'" :class="{ active: currentPage === 'forum' }">Forums</v-btn>
+        <v-btn text @click="currentPage = 'about'" :class="{ active: currentPage === 'about' }">Par Mums</v-btn>
+        <v-btn text @click="currentPage = 'contact'" :class="{ active: currentPage === 'contact' }">Kontakti</v-btn>
+        <v-btn icon @click="toggleTheme" :title="darkMode ? 'Gaisma' : 'Tumsa'">
           <v-icon>{{ darkMode ? 'mdi-weather-sunny' : 'mdi-moon-waning-crescent' }}</v-icon>
         </v-btn>
-        <v-btn 
-          text 
-          @click="showLoginWindow = true"
-        >
-          Pieslēgties
-        </v-btn>
+        <v-btn text @click="showLoginWindow = true">Pieslēgties</v-btn>
       </div>
     </v-app-bar>
 
 
-    <!-----Basics----->
-    <!-- Homepage -->
+<!-----Basics----->
+<!-- Homepage -->
+
     <v-main v-if="currentPage === 'home'" class="main-content">
       <v-container fluid class="hero-section">
         <h1 class="site-title">Galvenā lapa</h1>
@@ -68,7 +39,9 @@
         </v-card>
       </v-container>
 
-      <!-- Cards -->
+
+<!-- Cards -->
+
       <v-container fluid class="py-8">
         <v-row>
           <v-col cols="12" sm="6" md="3">
@@ -123,7 +96,8 @@
     </v-main>
 
 
-    <!-- Forum -->
+<!-- Forum -->
+
     <v-main v-else-if="currentPage === 'forum'" class="main-content">
       <v-container fluid class="py-8">
         <v-card class="forum-section site-section">
@@ -160,7 +134,8 @@
     </v-main>
 
 
-    <!-- About page -->
+<!-- About page -->
+
     <v-main v-else-if="currentPage === 'about'" class="main-content">
       <v-container fluid class="py-8">
         <v-card class="about-section site-section">
@@ -192,7 +167,9 @@
       </v-container>
     </v-main>
 
-    <!-- Contacts -->
+
+<!-- Contacts -->
+
     <v-main v-else-if="currentPage === 'contact'" class="main-content">
       <v-container fluid class="py-8">
         <v-card class="contact-section site-section">
@@ -216,25 +193,9 @@
                 <v-card-text>
                   <h3>Nosūti ziņojumu!</h3>
                   <v-form @submit.prevent="submitContact">
-                    <v-text-field 
-                      v-model="contactForm.name"
-                      label="Jūsu vārds un uzvārds"
-                      required
-                      class="mb-4"
-                    ></v-text-field>
-                    <v-text-field 
-                      v-model="contactForm.email"
-                      label="Jūsu epasts"
-                      type="email"
-                      required
-                      class="mb-4"
-                    ></v-text-field>
-                    <v-textarea 
-                      v-model="contactForm.message"
-                      label="Jūsu ziņojums"
-                      required
-                      class="mb-4"
-                    ></v-textarea>
+                    <v-text-field v-model="contactForm.name" label="Jūsu vārds un uzvārds" required class="mb-4"></v-text-field>
+                    <v-text-field v-model="contactForm.email" label="Jūsu epasts" type="email" required class="mb-4"></v-text-field>
+                    <v-textarea v-model="contactForm.message" label="Jūsu ziņojums" required class="mb-4"></v-textarea>
                     <v-btn type="submit" color="primary" variant="elevated" block>Sūtīt</v-btn>
                   </v-form>
                 </v-card-text>
@@ -246,7 +207,8 @@
     </v-main>
 
 
-    <!-- Pomodoro clock -->
+<!-- Pomodoro clock -->
+
     <v-main v-else-if="currentPage === 'pomodoro'" class="main-content">
       <v-container fluid class="py-8">
         <v-card class="pomodoro-section site-section">
@@ -264,14 +226,15 @@
     </v-main>
 
 
-    <!-- Task board -->
+<!-- Task board -->
+
     <v-main v-else-if="currentPage === 'taskboard'" class="main-content">
       <v-container fluid class="py-8">
         <v-card class="taskboard-section site-section">
           <v-card-text>
             <h2>Uzdevumu Dēlis</h2>
             <div class="contact-content">
-              <!-- Add task board content here -->
+              
             </div>
           </v-card-text>
         </v-card>
@@ -279,21 +242,23 @@
     </v-main>
 
 
-    <!-- Eisenhower matrix -->
+<!-- Eisenhower matrix -->
+
     <v-main v-else-if="currentPage === 'matrix'" class="main-content">
       <v-container fluid class="py-8">
         <v-card class="matrix-section site-section">
           <v-card-text>
             <h2>Eizenhauera Matrica</h2>
             <div class="contact-content">
-              <!-- Add matrix content here -->
+              
             </div>
           </v-card-text>
         </v-card>
       </v-container>
     </v-main>
 
-    <!-- Calendar -->
+<!-- Calendar -->
+
     <v-main v-else-if="currentPage === 'calendar'" class="main-content">
       <v-container fluid class="py-8">
         <v-card class="calendar-section site-section">
@@ -309,12 +274,14 @@
     </v-main>
 
 
-    <!-- Footer -->
+<!-- Footer -->
+
     <v-footer app class="d-flex justify-center" id="footer-section">
-      <span>&copy; 2026 TaskForge - D. Sabovics. All rights reserved.</span>
+      <span>&copy; 2026 TaskForge - D. Šabovičs. All rights reserved.</span>
     </v-footer>
 
-    <!-- Login Dialog -->
+<!-- Login Sequence -->
+
     <v-dialog v-model="showLoginWindow" persistent max-width="400px">
       <v-card>
         <v-card-title class="bg-primary text-white">
@@ -326,40 +293,22 @@
 
         <v-card-text class="pt-6">
           <v-form @submit.prevent="handleLogin">
-            <v-text-field 
-              v-model="loginForm.email"
-              label="Epasts"
-              type="email"
-              required
-              class="mb-4"
-            ></v-text-field>
-
-            <v-text-field 
-              v-model="loginForm.password"
-              label="Parole"
-              type="password"
-              required
-              class="mb-4"
-            ></v-text-field>
-
+            <v-text-field v-model="loginForm.email" label="Epasts" type="email" required class="mb-4"></v-text-field>
+            <v-text-field v-model="loginForm.password" label="Parole" type="password" required class="mb-4"></v-text-field>
             <v-btn type="submit" color="primary" variant="elevated" block class="mb-4">Pieslēgties</v-btn>
           </v-form>
 
           <p class="text-center">
             Nav konta? 
-            <v-btn 
-              text 
-              color="primary"
-              @click="showLoginWindow = false; showRegisterWindow = true"
-            >
-              Reģistrēties
-            </v-btn>
+            <v-btn text color="primary" @click="showLoginWindow = false; showRegisterWindow = true">Reģistrēties</v-btn>
           </p>
         </v-card-text>
       </v-card>
     </v-dialog>
 
-    <!-- Register Dialog -->
+
+<!-- Register Sequence -->
+
     <v-dialog v-model="showRegisterWindow" persistent max-width="400px">
       <v-card>
         <v-card-title class="bg-primary text-white">
@@ -371,49 +320,16 @@
 
         <v-card-text class="pt-6">
           <v-form @submit.prevent="handleRegister">
-            <v-text-field 
-              v-model="registerForm.name"
-              label="Vārds"
-              required
-              class="mb-4"
-            ></v-text-field>
-
-            <v-text-field 
-              v-model="registerForm.email"
-              label="Epasts"
-              type="email"
-              required
-              class="mb-4"
-            ></v-text-field>
-
-            <v-text-field 
-              v-model="registerForm.password"
-              label="Parole"
-              type="password"
-              required
-              class="mb-4"
-            ></v-text-field>
-
-            <v-text-field 
-              v-model="registerForm.password_confirmation"
-              label="Apstiprināt paroli"
-              type="password"
-              required
-              class="mb-4"
-            ></v-text-field>
-
+            <v-text-field v-model="registerForm.name" label="Vārds" required class="mb-4"></v-text-field>
+            <v-text-field v-model="registerForm.email" label="Epasts" type="email" required class="mb-4"></v-text-field>
+            <v-text-field v-model="registerForm.password" label="Parole" type="password" required class="mb-4"></v-text-field>
+            <v-text-field v-model="registerForm.password_confirmation" label="Apstiprināt paroli" type="password" required class="mb-4"></v-text-field>
             <v-btn type="submit" color="primary" variant="elevated" block class="mb-4">Reģistrēties</v-btn>
           </v-form>
 
           <p class="text-center">
             Jau ir konts? 
-            <v-btn 
-              text 
-              color="primary"
-              @click="showRegisterWindow = false; showLoginWindow = true"
-            >
-              Pieslēgties
-            </v-btn>
+            <v-btn text color="primary" @click="showRegisterWindow = false; showLoginWindow = true">Pieslēgties</v-btn>
           </p>
         </v-card-text>
       </v-card>
@@ -422,7 +338,9 @@
   </v-app>
 </template>
 
+
 <!--scripts-->
+
 <script>
   import { useTheme } from 'vuetify'
 
@@ -474,12 +392,12 @@
       },
 
       startPomodoro() {
-        // Implementation for pomodoro timer
+        
         alert('Pomodoro timer started!')
       },
 
       pausePomodoro() {
-        // Implementation for pause
+        
         alert('Pomodoro timer paused!')
       },
 
@@ -493,17 +411,13 @@
       },
 
       handleLogin() {
-        // Here you would typically send the login data to your backend
         alert(`Logging in with email: ${this.loginForm.email}`)
-        // Reset form and close window
         this.loginForm = { email: '', password: '' }
         this.showLoginWindow = false
       },
 
       handleRegister() {
-        // Here you would typically send the register data to your backend
         alert(`Registering user: ${this.registerForm.name}`)
-        // Reset form and close window
         this.registerForm = { name: '', email: '', password: '', password_confirmation: '' }
         this.showRegisterWindow = false
       }
@@ -521,6 +435,7 @@
     }
   }
 </script>
+
 <style scoped lang="css">
   #simple-app {
     font-family: Bahnschrift, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -586,7 +501,9 @@
     border-radius: 8px;
   }
 
-  /* Cards styling */
+
+/* Cards styling */
+
   .card {
     display: flex;
     flex-direction: column;
@@ -685,7 +602,9 @@
     background-color: #f8f8f8;
   }
 
+
   /* Pomodoro */
+
   .pomodoro-content {
     display: flex;
     gap: 20px;
