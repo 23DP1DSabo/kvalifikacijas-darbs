@@ -214,10 +214,11 @@
         <v-card class="pomodoro-section site-section">
           <v-card-text>
             <h2>Pomodoro Pulkstenis</h2>
+            <p>{{ currentPhase === 'work' ? 'Work session' : currentPhase === 'break' ? 'Short break' : 'Long break' }}</p>
             <div class="pomodoro-content">
               <div class="timer-display">{{ formatTime(pomodoroTime) }}</div>
-              <v-btn color="primary" variant="elevated" @click="startPomodoro" class="ma-2">Start</v-btn>
-              <v-btn color="warning" variant="elevated" @click="pausePomodoro" class="ma-2">Pause</v-btn>
+              <v-btn color="primary" variant="elevated" @click="startPomodoro" class="ma-2" :disabled="isPomodoroRunning">Start</v-btn>
+              <v-btn color="warning" variant="elevated" @click="pausePomodoro" class="ma-2" :disabled="!isPomodoroRunning">Pause</v-btn>
               <v-btn color="error" variant="elevated" @click="resetPomodoro" class="ma-2">Reset</v-btn>
             </div>
           </v-card-text>
@@ -374,6 +375,13 @@
           password_confirmation: ''
         },
         pomodoroTime: 25 * 60,
+        pomodoroDuration: 25 * 60,
+        shortBreakDuration: 5 * 60,
+        longBreakDuration: 15 * 60,
+        currentPhase: 'work',
+        isPomodoroRunning: false,
+        pomodoroTimerId: null,
+        cyclesCompleted: 0,
         calendarAttributes: []
       }
     },
@@ -382,6 +390,12 @@
       toggleTheme() {
         this.darkMode = !this.darkMode
         this.theme.global.name.value = this.darkMode ? 'dark' : 'light'
+        const appElement = document.getElementById('simple-app')
+        if (this.darkMode) {
+          appElement?.classList.add('dark-theme')
+        } else {
+          appElement?.classList.remove('dark-theme')
+        }
         localStorage.setItem('darkMode', this.darkMode)
       },
 
@@ -392,17 +406,60 @@
       },
 
       startPomodoro() {
-        
-        alert('Pomodoro timer started!')
+        if (this.isPomodoroRunning) return
+
+        this.isPomodoroRunning = true
+        this.pomodoroTimerId = setInterval(() => {
+          if (this.pomodoroTime > 0) {
+            this.pomodoroTime -= 1
+            return
+          }
+
+          // transition phase
+          if (this.currentPhase === 'work') {
+            this.cyclesCompleted += 1
+            if (this.cyclesCompleted % 4 === 0) {
+              this.currentPhase = 'longBreak'
+              this.pomodoroTime = this.longBreakDuration
+              this.notify('Long break starts!')
+            } else {
+              this.currentPhase = 'break'
+              this.pomodoroTime = this.shortBreakDuration
+              this.notify('Break starts!')
+            }
+          } else {
+            this.currentPhase = 'work'
+            this.pomodoroTime = this.pomodoroDuration
+            this.notify('Work session starts!')
+          }
+        }, 1000)
       },
 
       pausePomodoro() {
-        
-        alert('Pomodoro timer paused!')
+        if (this.pomodoroTimerId) {
+          clearInterval(this.pomodoroTimerId)
+          this.pomodoroTimerId = null
+        }
+        this.isPomodoroRunning = false
       },
 
       resetPomodoro() {
-        this.pomodoroTime = 25 * 60
+        if (this.pomodoroTimerId) {
+          clearInterval(this.pomodoroTimerId)
+          this.pomodoroTimerId = null
+        }
+        this.isPomodoroRunning = false
+        this.currentPhase = 'work'
+        this.cyclesCompleted = 0
+        this.pomodoroTime = this.pomodoroDuration
+      },
+
+      notify(message) {
+        if (window.Notification && Notification.permission === 'granted') {
+          new Notification(message)
+        } else {
+          console.log(message)
+        }
       },
 
       submitContact() {
@@ -425,12 +482,23 @@
 
     mounted() {
       const saved = localStorage.getItem('darkMode')
+      const appElement = document.getElementById('simple-app')
       if (saved === 'true') {
         this.darkMode = true
         this.theme.global.name.value = 'dark'
+        appElement?.classList.add('dark-theme')
       } else {
         this.darkMode = false
         this.theme.global.name.value = 'light'
+        appElement?.classList.remove('dark-theme')
+      }
+
+      if (window.Notification && Notification.permission !== 'granted') {
+        Notification.requestPermission().then((permission) => {
+          if (permission !== 'granted') {
+            console.log('Notification permission denied')
+          }
+        })
       }
     }
   }
