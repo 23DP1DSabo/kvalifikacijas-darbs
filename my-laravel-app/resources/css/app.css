@@ -374,7 +374,7 @@ calendar-section {
 }
 
 
-/*----- dark theme -----------------------*/
+/*------dark theme------------------------*/
 
 .dark-theme {
   background-color: #121212;
@@ -498,4 +498,144 @@ calendar-section {
 
 .dark-theme p {
   color: #ffffff;
+}
+
+
+/*------window Styles----------------------*/
+
+.window-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.window-content {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.window-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.window-header h2 {
+  margin: 0;
+  color: #333333;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666666;
+}
+
+.close-btn:hover {
+  color: #333333;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  color: #333333;
+  font-weight: bold;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #dddddd;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.login-btn {
+  background-color: #667eea;
+  color: #ffffff;
+  border: none;
+  padding: 12px;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.login-btn:hover {
+  background-color: #5a67d8;
+}
+
+.register-link {
+  text-align: center;
+  margin-top: 15px;
+  color: #666666;
+}
+
+.register-link a {
+  color: #667eea;
+  text-decoration: none;
+}
+
+.register-link a:hover {
+  text-decoration: underline;
+}
+
+/* Dark theme window styles */
+.dark-theme .window-content {
+  background-color: #1e1e1e;
+  color: #ffffff;
+}
+
+.dark-theme .window-header h2 {
+  color: #ffffff;
+}
+
+.dark-theme .form-group label {
+  color: #ffffff;
+}
+
+.dark-theme .form-group input {
+  background-color: #2d2d2d;
+  color: #ffffff;
+  border-color: #444444;
+}
+
+.dark-theme .form-group input:focus {
+  border-color: #764ba2;
+}
+
+.dark-theme .register-link {
+  color: #cccccc;
+}
+
+.dark-theme .register-link a {
+  color: #764ba2;
 }

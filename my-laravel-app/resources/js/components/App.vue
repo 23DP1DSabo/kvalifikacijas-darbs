@@ -10,8 +10,10 @@
         <a href="/about" :class="{ active: currentPage === 'about' }">Par Mums</a>
         <a href="/contact" :class="{ active: currentPage === 'contact' }">Kontakti</a>
         <button class="nav-btn" @click="toggleTheme">'{{ darkMode ? 'light' : 'dark' }}' tēma</button>
+        <button class="nav-btn" @click="showLoginwindow = true">Pieslēgties</button>
       </nav>
     </header>
+
 
 <!-----Basics----->
 <!--Homepage-->
@@ -32,6 +34,7 @@
           </div>
           <a class="card-button" href="/pomodoro" :class="{ active: currentPage === 'pomodoro' }">Pāriet</a>
         </div>
+
 
 <!--Cards-->
         <div class="card" id="task-card">
@@ -60,6 +63,7 @@
       </section>
     </main>
 
+
 <!--Forum-->
     <main class="main-content" v-else-if="currentPage === 'forum'">
       <section class="forum-section site-section">
@@ -78,6 +82,7 @@
       </section>
     </main>
 
+
 <!--About-page-->
     <main class="main-content" v-else-if="currentPage === 'about'">
       <section class="about-section site-section">
@@ -95,6 +100,7 @@
         </div>
       </section>
     </main>
+
 
 <!--Contacts-->
     <main class="main-content" v-else-if="currentPage === 'contact'">
@@ -119,6 +125,7 @@
       </section>
     </main>
 
+
 <!-----Interactive tools----->
 <!--Pomodoro clock-->
     <main class="main-content" v-else-if="currentPage === 'pomodoro'">
@@ -133,6 +140,7 @@
       </section>
     </main>
 
+
 <!--Task board-->
     <main class="main-content" v-else-if="currentPage === 'taskboard'">
       <section class="taskboard-section site-section">
@@ -142,6 +150,7 @@
         </div>
       </section>
   </main>
+
 
 <!--Eisenhower matrix-->
     <main class="main-content" v-else-if="currentPage === 'matrix'">
@@ -153,13 +162,15 @@
       </section>
     </main>
 
+    
 <!--Calendar-->
     <main class="main-content" v-else-if="currentPage === 'calendar'">
       <section class="calendar-section site-section">
         <h2>Kalendārs</h2>
         <div class="contact-content">
-          
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Autem suscipit alias adipisci beatae recusandae aperiam ratione ab facere amet, quo consectetur perferendis iure numquam nostrum, quos corrupti maxime delectus dolorum.
         </div>
+        <VCalendar :attributes="calendarAttributes" />
       </section>
     </main>
 
@@ -169,6 +180,57 @@
       <p>&copy; 2026 TaskForge - D. Sabovics. All rights reserved.</p>
     </footer>
 
+<!-- Login Window -->
+    <div v-if="showLoginWindow" class="window-overlay" @click="showLoginWindow = false">
+      <div class="window-content" @click.stop>
+        <div class="window-header">
+          <h2>Pieslēgties</h2>
+          <button class="close-btn" @click="showLoginWindow = false">&times;</button>
+        </div>
+        <form @submit.prevent="handleLogin" class="login-form">
+          <div class="form-group">
+            <label for="email">Epasts:</label>
+            <input type="email" id="email" v-model="loginForm.email" required>
+          </div>
+          <div class="form-group">
+            <label for="password">Parole:</label>
+            <input type="password" id="password" v-model="loginForm.password" required>
+          </div>
+          <button type="submit" class="login-btn">Pieslēgties</button>
+        </form>
+        <p class="register-link">Nav konta? <a href="#" @click.prevent="showRegisterWindow = true; showLoginWindow = false">Reģistrēties</a></p>
+      </div>
+    </div>
+
+    <!-- Register window -->
+    <div v-if="showRegisterWindow" class="window-overlay" @click="showRegisterWindow = false">
+      <div class="window-content" @click.stop>
+        <div class="window-header">
+          <h2>Reģistrēties</h2>
+          <button class="close-btn" @click="showRegisterWindow = false">&times;</button>
+        </div>
+        <form @submit.prevent="handleRegister" class="login-form">
+          <div class="form-group">
+            <label for="reg-name">Vārds:</label>
+            <input type="text" id="reg-name" v-model="registerForm.name" required>
+          </div>
+          <div class="form-group">
+            <label for="reg-email">Epasts:</label>
+            <input type="email" id="reg-email" v-model="registerForm.email" required>
+          </div>
+          <div class="form-group">
+            <label for="reg-password">Parole:</label>
+            <input type="password" id="reg-password" v-model="registerForm.password" required>
+          </div>
+          <div class="form-group">
+            <label for="reg-password-confirm">Apstiprināt paroli:</label>
+            <input type="password" id="reg-password-confirm" v-model="registerForm.password_confirmation" required>
+          </div>
+          <button type="submit" class="login-btn">Reģistrēties</button>
+        </form>
+        <p class="register-link">Jau ir konts? <a href="#" @click.prevent="showLoginWindow = true; showRegisterWindow = false">Pieslēgties</a></p>
+      </div>
+    </div>
 
   </div>
 </template>
@@ -183,10 +245,22 @@
         pageTitle: window.pageData?.title || 'Homepage',
         clickCount: 0,
         darkMode: false,
+        showLoginWindow: false,
+        showRegisterWindow: false,
         contactForm: {
           name: '',
           email: '',
           message: ''
+        },
+        loginForm: {
+          email: '',
+          password: ''
+        },
+        registerForm: {
+          name: '',
+          email: '',
+          password: '',
+          password_confirmation: ''
         }
       }
     },
@@ -201,6 +275,22 @@
       submitContact() {
         alert(`Thank you ${this.contactForm.name}! Your message has been sent.`)
         this.contactForm = { name: '', email: '', message: '' }
+      },
+
+      handleLogin() {
+        // Here you would typically send the login data to your backend
+        alert(`Logging in with email: ${this.loginForm.email}`)
+        // Reset form and close window
+        this.loginForm = { email: '', password: '' }
+        this.showLoginwindow = false
+      },
+
+      handleRegister() {
+        // Here you would typically send the register data to your backend
+        alert(`Registering user: ${this.registerForm.name}`)
+        // Reset form and close window
+        this.registerForm = { name: '', email: '', password: '', password_confirmation: '' }
+        this.showRegisterwindow = false
       }
     },
 
