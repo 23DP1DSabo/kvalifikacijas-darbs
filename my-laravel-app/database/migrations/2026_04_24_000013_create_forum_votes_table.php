@@ -6,25 +6,20 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('matrix', function (Blueprint $table) {
+        Schema::create('forum_votes', function (Blueprint $table) {
             $table->id();
-            $table->timestamp('updated_at')->nullable();
-            $table->string('quadrant');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('comment_id')->constrained('forum_comments')->onDelete('cascade');
+            $table->tinyInteger('value'); // 1 = up, -1 = down
             $table->timestamps();
+            $table->unique(['user_id', 'comment_id']);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('matrix');
+        Schema::dropIfExists('forum_votes');
     }
 };

@@ -18,9 +18,16 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
+        'username',
         'name',
+        'surname',
         'email',
         'password',
+        'role',
+        'profile_picture',
+        'phone_number',
+        'bio',
+        'date_of_birth',
     ];
 
     /**
@@ -44,5 +51,15 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function tasks()
+    {
+        return $this->hasMany(Task::class);
+    }
+
+    public function columns()
+    {
+        return $this->hasMany(BoardColumn::class);
     }
 }
