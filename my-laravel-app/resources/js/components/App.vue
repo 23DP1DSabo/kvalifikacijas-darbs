@@ -342,11 +342,14 @@
               <v-card class="contact-form">
                 <v-card-text>
                   <h3>Nosūti ziņojumu!</h3>
-                  <v-form @submit.prevent="submitContact">
+                  <v-alert v-if="contactSent" type="success" variant="tonal" class="mb-4">
+                    Paldies! Jūsu ziņojums ir nosūtīts.
+                  </v-alert>
+                  <v-form v-else @submit.prevent="submitContact">
                     <v-text-field v-model="contactForm.name" label="Jūsu vārds un uzvārds" required class="mb-4"></v-text-field>
                     <v-text-field v-model="contactForm.email" label="Jūsu epasts" type="email" required class="mb-4"></v-text-field>
                     <v-textarea v-model="contactForm.message" label="Jūsu ziņojums" required class="mb-4"></v-textarea>
-                    <v-btn type="submit" color="primary" variant="elevated" block>Sūtīt</v-btn>
+                    <v-btn type="submit" color="primary" variant="elevated" block :loading="contactLoading">Sūtīt</v-btn>
                   </v-form>
                 </v-card-text>
               </v-card>
@@ -1018,6 +1021,13 @@
       </v-card>
     </v-dialog>
 
+    <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="4000" location="bottom">
+      {{ snackbar.text }}
+      <template #actions>
+        <v-btn variant="text" icon="mdi-close" @click="snackbar.show = false"></v-btn>
+      </template>
+    </v-snackbar>
+
   </v-app>
 </template>
 
@@ -1049,6 +1059,9 @@
           email: '',
           message: ''
         },
+        contactLoading: false,
+        contactSent: false,
+        snackbar: { show: false, text: '', color: 'error' },
         loginForm: {
           email: '',
           password: ''
@@ -1396,9 +1409,25 @@
         }
       },
 
-      submitContact() {
-        alert(`Thank you ${this.contactForm.name}! Your message has been sent.`)
-        this.contactForm = { name: '', email: '', message: '' }
+      showSnackbar(text, color = 'error') {
+        this.snackbar = { show: true, text, color }
+      },
+
+      async submitContact() {
+        this.contactLoading = true
+        try {
+          const res = await this.apiFetch('/api/contact', {
+            method: 'POST',
+            body: JSON.stringify(this.contactForm),
+          })
+          if (!res.ok) throw new Error()
+          this.contactSent = true
+          this.contactForm = { name: '', email: '', message: '' }
+        } catch {
+          this.showSnackbar('Ziņojumu neizdevās nosūtīt. Mēģiniet vēlreiz.')
+        } finally {
+          this.contactLoading = false
+        }
       },
 
       async handleLogin() {
@@ -1560,38 +1589,49 @@
       },
       async saveTask() {
         if (!this.taskForm.title.trim()) return
-        if (this.currentUser) {
-          if (this.editingTask) {
-            await this.apiFetch(`/api/tasks/${this.editingTask.id}`, {
-              method: 'PUT',
-              body: JSON.stringify({ ...this.taskForm, column_id: this.editingTask.columnId }),
-            })
-            const idx = this.tasks.findIndex(t => t.id === this.editingTask.id)
-            if (idx !== -1) this.tasks.splice(idx, 1, { ...this.tasks[idx], ...this.taskForm })
+        try {
+          if (this.currentUser) {
+            if (this.editingTask) {
+              const res = await this.apiFetch(`/api/tasks/${this.editingTask.id}`, {
+                method: 'PUT',
+                body: JSON.stringify({ ...this.taskForm, column_id: this.editingTask.columnId }),
+              })
+              if (!res.ok) throw new Error()
+              const idx = this.tasks.findIndex(t => t.id === this.editingTask.id)
+              if (idx !== -1) this.tasks.splice(idx, 1, { ...this.tasks[idx], ...this.taskForm })
+            } else {
+              const defaultColId = this.columns[0]?.id ?? null
+              const res = await this.apiFetch('/api/tasks', {
+                method: 'POST',
+                body: JSON.stringify({ ...this.taskForm, column_id: defaultColId }),
+              })
+              if (!res.ok) throw new Error()
+              const created = await res.json()
+              this.tasks.push({ id: created.id, quadrant: null, columnId: defaultColId, ...this.taskForm })
+            }
           } else {
-            const defaultColId = this.columns[0]?.id ?? null
-            const res = await this.apiFetch('/api/tasks', {
-              method: 'POST',
-              body: JSON.stringify({ ...this.taskForm, column_id: defaultColId }),
-            })
-            const created = await res.json()
-            this.tasks.push({ id: created.id, quadrant: null, columnId: defaultColId, ...this.taskForm })
+            if (this.editingTask) {
+              const idx = this.tasks.findIndex(t => t.id === this.editingTask.id)
+              if (idx !== -1) this.tasks.splice(idx, 1, { ...this.tasks[idx], ...this.taskForm })
+            } else {
+              this.tasks.push({ id: Date.now(), quadrant: null, columnId: 'default', ...this.taskForm })
+            }
           }
-        } else {
-          if (this.editingTask) {
-            const idx = this.tasks.findIndex(t => t.id === this.editingTask.id)
-            if (idx !== -1) this.tasks.splice(idx, 1, { ...this.tasks[idx], ...this.taskForm })
-          } else {
-            this.tasks.push({ id: Date.now(), quadrant: null, columnId: 'default', ...this.taskForm })
-          }
+          this.showTaskDialog = false
+        } catch {
+          this.showSnackbar('Neizdevās saglabāt uzdevumu. Mēģiniet vēlreiz.')
         }
-        this.showTaskDialog = false
       },
       async deleteTask(id) {
-        if (this.currentUser) {
-          await this.apiFetch(`/api/tasks/${id}`, { method: 'DELETE' })
+        try {
+          if (this.currentUser) {
+            const res = await this.apiFetch(`/api/tasks/${id}`, { method: 'DELETE' })
+            if (!res.ok) throw new Error()
+          }
+          this.tasks = this.tasks.filter(t => t.id !== id)
+        } catch {
+          this.showSnackbar('Neizdevās dzēst uzdevumu. Mēģiniet vēlreiz.')
         }
-        this.tasks = this.tasks.filter(t => t.id !== id)
       },
       clearMatrix() {
         this.tasks = this.tasks.map(t => ({ ...t, quadrant: null }))
@@ -1601,23 +1641,37 @@
         event.dataTransfer.setData('text/plain', String(taskId))
         event.dataTransfer.effectAllowed = 'move'
       },
-      onDropToQuadrant(quadrant) {
+      async onDropToQuadrant(quadrant) {
         if (this.draggedTaskId === null) return
-        const idx = this.tasks.findIndex(t => t.id === this.draggedTaskId)
-        if (idx !== -1) {
-          this.tasks.splice(idx, 1, { ...this.tasks[idx], quadrant })
-          if (this.currentUser) this.apiFetch(`/api/tasks/${this.draggedTaskId}`, { method: 'PUT', body: JSON.stringify({ quadrant }) })
-        }
+        const id = this.draggedTaskId
         this.draggedTaskId = null
+        const idx = this.tasks.findIndex(t => t.id === id)
+        if (idx === -1) return
+        this.tasks.splice(idx, 1, { ...this.tasks[idx], quadrant })
+        if (this.currentUser) {
+          try {
+            const res = await this.apiFetch(`/api/tasks/${id}`, { method: 'PUT', body: JSON.stringify({ quadrant }) })
+            if (!res.ok) throw new Error()
+          } catch {
+            this.showSnackbar('Neizdevās saglabāt matricas izmaiņas.')
+          }
+        }
       },
-      onDropToCalendarDay(dateStr) {
+      async onDropToCalendarDay(dateStr) {
         if (this.draggedTaskId === null) return
-        const idx = this.tasks.findIndex(t => t.id === this.draggedTaskId)
-        if (idx !== -1) {
-          this.tasks.splice(idx, 1, { ...this.tasks[idx], due_date: dateStr })
-          if (this.currentUser) this.apiFetch(`/api/tasks/${this.draggedTaskId}`, { method: 'PUT', body: JSON.stringify({ due_date: dateStr }) })
-        }
+        const id = this.draggedTaskId
         this.draggedTaskId = null
+        const idx = this.tasks.findIndex(t => t.id === id)
+        if (idx === -1) return
+        this.tasks.splice(idx, 1, { ...this.tasks[idx], due_date: dateStr })
+        if (this.currentUser) {
+          try {
+            const res = await this.apiFetch(`/api/tasks/${id}`, { method: 'PUT', body: JSON.stringify({ due_date: dateStr }) })
+            if (!res.ok) throw new Error()
+          } catch {
+            this.showSnackbar('Neizdevās saglabāt kalendāra izmaiņas.')
+          }
+        }
       },
       changeMonth(delta) {
         this.calendarMonth += delta
@@ -1652,7 +1706,10 @@
         this.forumLoading = true
         try {
           const res = await this.apiFetch('/api/forum/categories')
+          if (!res.ok) throw new Error()
           this.forumCategories = await res.json()
+        } catch {
+          this.showSnackbar('Neizdevās ielādēt foruma kategorijas.')
         } finally {
           this.forumLoading = false
         }
@@ -1664,7 +1721,10 @@
         this.forumLoading = true
         try {
           const res = await this.apiFetch(`/api/forum/categories/${cat.id}/posts`)
+          if (!res.ok) throw new Error()
           this.forumPosts = await res.json()
+        } catch {
+          this.showSnackbar('Neizdevās ielādēt ierakstus.')
         } finally {
           this.forumLoading = false
         }
@@ -1677,7 +1737,10 @@
         this.forumNewComment = ''
         try {
           const res = await this.apiFetch(`/api/forum/posts/${post.id}`)
+          if (!res.ok) throw new Error()
           this.forumPostData = await res.json()
+        } catch {
+          this.showSnackbar('Neizdevās ielādēt ierakstu.')
         } finally {
           this.forumLoading = false
         }
@@ -1685,39 +1748,46 @@
 
       async submitForumPost() {
         if (!this.forumNewPost.title.trim() || !this.forumNewPost.body.trim()) return
-        const res = await this.apiFetch(`/api/forum/categories/${this.forumCategory.id}/posts`, {
-          method: 'POST',
-          body: JSON.stringify(this.forumNewPost),
-        })
-        if (res.ok) {
+        try {
+          const res = await this.apiFetch(`/api/forum/categories/${this.forumCategory.id}/posts`, {
+            method: 'POST',
+            body: JSON.stringify(this.forumNewPost),
+          })
+          if (!res.ok) throw new Error()
           const created = await res.json()
           this.forumPosts.unshift(created)
           this.forumNewPost = { title: '', body: '' }
           this.showNewPostDialog = false
           if (this.forumCategory) this.forumCategory.posts_count = (this.forumCategory.posts_count || 0) + 1
+        } catch {
+          this.showSnackbar('Neizdevās publicēt ierakstu. Mēģiniet vēlreiz.')
         }
       },
 
       async submitForumComment() {
         if (!this.forumNewComment.trim() || !this.forumPostData) return
-        const res = await this.apiFetch(`/api/forum/posts/${this.forumPostData.post.id}/comments`, {
-          method: 'POST',
-          body: JSON.stringify({ body: this.forumNewComment }),
-        })
-        if (res.ok) {
+        try {
+          const res = await this.apiFetch(`/api/forum/posts/${this.forumPostData.post.id}/comments`, {
+            method: 'POST',
+            body: JSON.stringify({ body: this.forumNewComment }),
+          })
+          if (!res.ok) throw new Error()
           const created = await res.json()
           this.forumPostData.comments.unshift(created)
           this.forumNewComment = ''
+        } catch {
+          this.showSnackbar('Neizdevās publicēt komentāru. Mēģiniet vēlreiz.')
         }
       },
 
       async castVote(comment, value) {
         if (!this.currentUser) { this.showLoginWindow = true; return }
-        const res = await this.apiFetch(`/api/forum/comments/${comment.id}/vote`, {
-          method: 'POST',
-          body: JSON.stringify({ value }),
-        })
-        if (res.ok) {
+        try {
+          const res = await this.apiFetch(`/api/forum/comments/${comment.id}/vote`, {
+            method: 'POST',
+            body: JSON.stringify({ value }),
+          })
+          if (!res.ok) throw new Error()
           const data = await res.json()
           const idx = this.forumPostData.comments.findIndex(c => c.id === comment.id)
           if (idx !== -1) {
@@ -1728,6 +1798,8 @@
               user_vote: data.user_vote,
             })
           }
+        } catch {
+          this.showSnackbar('Neizdevās reģistrēt balsi. Mēģiniet vēlreiz.')
         }
       },
 
@@ -1746,35 +1818,40 @@
       // ───────────────────────────────────────────────────────
 
       async loadFromApi() {
-        const [colRes, taskRes] = await Promise.all([
-          this.apiFetch('/api/columns'),
-          this.apiFetch('/api/tasks'),
-        ])
-        const cols  = await colRes.json()
-        const tasks = await taskRes.json()
+        try {
+          const [colRes, taskRes] = await Promise.all([
+            this.apiFetch('/api/columns'),
+            this.apiFetch('/api/tasks'),
+          ])
+          if (!colRes.ok || !taskRes.ok) throw new Error()
+          const cols  = await colRes.json()
+          const tasks = await taskRes.json()
 
-        this.columns = cols.map(c => ({
-          id:          c.id,
-          name:        c.name,
-          description: c.description || '',
-          color:       c.color || '#764ba2',
-          createdAt:   c.created_at,
-        }))
+          this.columns = cols.map(c => ({
+            id:          c.id,
+            name:        c.name,
+            description: c.description || '',
+            color:       c.color || '#764ba2',
+            createdAt:   c.created_at,
+          }))
 
-        const defaultId = this.columns[0]?.id ?? null
+          const defaultId = this.columns[0]?.id ?? null
 
-        this.tasks = tasks.map(t => ({
-          id:          t.id,
-          title:       t.title,
-          description: t.description || '',
-          status:      t.status,
-          priority:    t.priority || 'medium',
-          due_date:       t.due_date,
-          quadrant:       t.quadrant,
-          columnId:       t.column_id ?? defaultId,
-          est_pomodoros:  t.est_pomodoros  ?? 1,
-          done_pomodoros: t.done_pomodoros ?? 0,
-        }))
+          this.tasks = tasks.map(t => ({
+            id:          t.id,
+            title:       t.title,
+            description: t.description || '',
+            status:      t.status,
+            priority:    t.priority || 'medium',
+            due_date:       t.due_date,
+            quadrant:       t.quadrant,
+            columnId:       t.column_id ?? defaultId,
+            est_pomodoros:  t.est_pomodoros  ?? 1,
+            done_pomodoros: t.done_pomodoros ?? 0,
+          }))
+        } catch {
+          this.showSnackbar('Neizdevās ielādēt datus no servera.')
+        }
       },
     },
 

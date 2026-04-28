@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\ColumnController;
 use App\Http\Controllers\ForumController;
@@ -22,6 +23,7 @@ Route::prefix('api')->group(function () {
     Route::get('/forum/categories',                [ForumController::class, 'categories']);
     Route::get('/forum/categories/{id}/posts',     [ForumController::class, 'posts']);
     Route::get('/forum/posts/{id}',                [ForumController::class, 'showPost']);
+    Route::post('/contact',                        [ContactController::class, 'send']);
 });
 
 // Auth-required API routes
@@ -40,14 +42,3 @@ Route::prefix('api')->middleware('auth')->group(function () {
     Route::post('/forum/comments/{id}/vote',      [ForumController::class, 'vote']);
 });
 
-Route::get('/forum', function () {
-    return view('forum');
-});
-
-Route::get('/about', function () {
-    return view('about');
-});
-
-Route::get('/contact', function () {
-    return view('contact');
-});
