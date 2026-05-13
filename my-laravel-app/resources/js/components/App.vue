@@ -175,14 +175,15 @@
     <v-main v-if="currentPage === 'home'" class="main-content">
       <v-container fluid class="hero-section">
         <h1 class="site-title">{{ s.homeTitle }}</h1>
-        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Necessitatibus doloremque sequi nulla inventore blanditiis! Omnis alias doloribus possimus nemo? Blanditiis amet quam libero cum, reprehenderit laudantium corrupti obcaecati modi ad.</p>
+        <p>Tavs sākums produktīvai profesionālajai izaugsmei!</p>
       </v-container>
 
       <v-container fluid class="py-8">
         <v-card class="description site-section">
           <v-card-text>
-            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Perferendis odit in quibusdam, enim cumque dolor laudantium sit quod impedit quo, aliquam et quis voluptatem delectus. Quasi facere architecto tenetur adipisci.</p>
-            <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Dolorem sit quam reiciendis numquam, dolore necessitatibus excepturi. Exercitationem atque non, ipsum veniam, est laudantium, porro fugiat nulla totam quia asperiores eveniet.</p>
+            <p>Mūsdienās, pateicoties tehnoloģiju straujai attīstībai, cilvēki arvien biežāk saskaras ar situācijām kad ir nepieciešams veikt vairākus darbus īsā laika sprīdī, neatkarīgi no tā vai tas notiek izglītības vai karjeras izaugsmē. Studenti, skolotāji, lietveži, darba vadītāji un daudzu citu nozaru cilvēki bieži vien var būt pārslogoti un pārņemti gan ar fizisku, gan ar mentālu darbu, tādā veidā iekavējot vai pavirši izpildot tos. Pats esmu novērojis prokrastināciju (darbu atlikšanu līdz pēdējam brīdim) kā rezultātu no šīs problēmas vienaudžu vidū savā kursā, draugu lokā un sociālajos tīklos, cilvēkiem daloties ar pieredzi.  </p>
+            <br>
+            <p>Mūsu uzdevums ir izveidot platformu, kas sniedz lietotājam uzreiz vairākas metodes sava darbalaika plānošanai un organizēšanai, lai izvairītos no prokrastinācijas, izdeguma un citiem pārslodzes rezultātiem. Šobrīd neesmu atradis vietni, kas atbilstu šādām prasībām, tāpēc liecinu ka tādas platformas izveide ir lietderīga un aktuāla. Ar tās palīdzību cilvēki spēs ne tikai, attīstīt savas administratīvās prasmes un veikt vairāk darba īsākā laika sprīdī, bet arī cerams pašizglītoties šajā jomā no citiem un palīdzēt citiem ar līdzīgiem trūkumiem. Datu bāzē tiks glabāta informācija par tādiem elementiem kā lietotāji, forumi, publicējumi, komentāri un pulkstenis, matrica, kalendārs, uzdevumi, uzdevumu dēlis. </p>
           </v-card-text>
         </v-card>
       </v-container>
@@ -544,12 +545,12 @@
           switchToEn:'Switch to English', switchToLv:'Pārslēgties uz latviešu',
           toolPomodoro:'Pomodoro', toolMatrix:'Eizenhauera Matrica',
           toolCalendar:'Kalendārs', toolTaskboard:'Uzdevumu Pārvaldnieks',
-          homeTitle:'Galvenā lapa',
+          homeTitle:'TaskForge',
           card1Title:'Pomodoro Pulkstenis', card1Desc:'Strādājiet un atpūtieites pēc noteikta laika grafika.',
           card2Title:'Mērķu Plānotājs',     card2Desc:'Organizējiet savus mērķus ilgtermiņā.',
           card3Title:'Eizenhauera Matrica', card3Desc:'Nosakidrojiet kādus mērķus sasniegt pirms citiem.',
           card4Title:'Uzdevumu Kalendārs',  card4Desc:'Lieciet atgādinājumus notikumiem vai termiņiem.',
-          forumTitle:'Forums', forumSubtitle:'Izvēlies kategoriju, lai sāktu vai lasītu diskusijas',
+          forumTitle:'Forums', forumSubtitle:' ',
           forumAllForums:'Visi forumi', forumNewPost:'Jauns ieraksts',
           forumSignInToWrite:'Piesakies, lai rakstītu', forumSignInToComment:'Piesakies, lai komentētu',
           forumNoPosts:'Nav ierakstu šajā kategorijā. Esi pirmais!',
@@ -595,7 +596,7 @@
           matrixSchedule:'IEPLĀNO', matrixScheduleSub:'Ne-steidzami + Svarīgi',
           matrixDelegate:'DELEĢĒ', matrixDelegateSub:'Steidzami + Nesvarīgi',
           matrixEliminate:'ATMET', matrixEliminateSub:'Ne-steidzami + Nesvarīgi',
-          matrixUrgency:'↑ Steidzamība', matrixImportance:'→ Svarīgums',
+          matrixUrgency:'→ Steidzamība', matrixImportance:'→ Svarīgums',
           matrixUnassigned:'Nepievienotie uzdevumi', matrixAllAssigned:'Visi uzdevumi ir pievienoti matricai',
           calTitle:'Kalendārs', calUnscheduled:'Neieplānotie uzdevumi',
           calNoUnscheduled:'Nav neieplānotu uzdevumu',
