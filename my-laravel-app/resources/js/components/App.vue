@@ -53,7 +53,7 @@
             </v-list-item>
             <v-list-item @click="toggleLanguage">
               <template v-slot:prepend>
-                <span class="lang-flag">{{ language === 'lv' ? '🇬🇧' : '🇱🇻' }}</span>
+                <span class="lang-flag">{{ language === 'lv' ? 'EN' : 'LV' }}</span>
               </template>
               <v-list-item-title>{{ language === 'lv' ? s.switchToEn : s.switchToLv }}</v-list-item-title>
             </v-list-item>
@@ -194,6 +194,7 @@
         <v-row align="stretch" class="home-cards-row">
           <v-col cols="12" sm="6" md="3" class="home-card-col">
             <v-card class="card" id="pomodoro-card" @click="currentPage = 'pomodoro'">
+              <v-img :src="imgPomodoro" height="180" cover></v-img>
               <v-card-text class="card-in-card">
                 <h3>{{ s.card1Title }}</h3>
                 <p>{{ s.card1Desc }}</p>
@@ -203,6 +204,7 @@
 
           <v-col cols="12" sm="6" md="3" class="home-card-col">
             <v-card class="card" id="task-card" @click="currentPage = 'taskboard'">
+              <v-img :src="imgKanban" height="180" cover></v-img>
               <v-card-text class="card-in-card">
                 <h3>{{ s.card2Title }}</h3>
                 <p>{{ s.card2Desc }}</p>
@@ -212,6 +214,7 @@
 
           <v-col cols="12" sm="6" md="3" class="home-card-col">
             <v-card class="card" id="eisenhower-card" @click="currentPage = 'matrix'">
+              <v-img :src="imgMatrix" height="180" cover></v-img>
               <v-card-text class="card-in-card">
                 <h3>{{ s.card3Title }}</h3>
                 <p>{{ s.card3Desc }}</p>
@@ -221,6 +224,7 @@
 
           <v-col cols="12" sm="6" md="3" class="home-card-col">
             <v-card class="card" id="calendar-card" @click="currentPage = 'calendar'">
+              <v-img :src="imgCalendar" height="180" cover></v-img>
               <v-card-text class="card-in-card">
                 <h3>{{ s.card4Title }}</h3>
                 <p>{{ s.card4Desc }}</p>
@@ -335,7 +339,7 @@
 
 <!-- Login Sequence -->
 
-    <v-dialog v-model="showLoginWindow" persistent max-width="400px">
+    <v-dialog v-model="showLoginWindow" max-width="400px" @update:model-value="v => { if (!v) authError = '' }">
       <v-card>
         <v-card-title class="bg-primary text-white">
           <div class="d-flex justify-space-between align-center">
@@ -363,7 +367,7 @@
 
 <!-- Register Sequence -->
 
-    <v-dialog v-model="showRegisterWindow" persistent max-width="400px">
+    <v-dialog v-model="showRegisterWindow" max-width="400px" @update:model-value="v => { if (!v) authError = '' }">
       <v-card>
         <v-card-title class="bg-primary text-white">
           <div class="d-flex justify-space-between align-center">
@@ -462,6 +466,10 @@
 <script>
   import { useTheme } from 'vuetify'
   import { apiFetch } from '../api.js'
+  import imgPomodoro  from '../../images/pomodoro-shrunk.webp'
+  import imgKanban    from '../../images/long-form_kanban-boards_section-1_asset-1.webp'
+  import imgMatrix    from '../../images/Eisenhower-Matrix.jpg'
+  import imgCalendar  from '../../images/FN-18-Calendar-2026-Pages.jpg'
   import PomodoroTool    from './PomodoroTool.vue'
   import TaskboardTool   from './TaskboardTool.vue'
   import MatrixTool      from './MatrixTool.vue'
@@ -480,6 +488,7 @@
     },
     data() {
       return {
+        imgPomodoro, imgKanban, imgMatrix, imgCalendar,
         currentPage: window.pageData?.currentPage || 'home',
         pageTitle: window.pageData?.title || 'Homepage',
         navDrawer: false,
@@ -491,7 +500,6 @@
         showRegisterWindow: false,
         showProfileDialog: false,
         avatarUploading: false,
-        verificationResending: false,
         profileForm: { name: '', surname: '', username: '' },
         profileError: '',
         profileSaving: false,
@@ -572,7 +580,7 @@
           pomoShortMin:'Īsā pauze (min)', pomoLongMin:'Garā pauze (min)',
           pomoSave:'Saglabāt', pomoCancel:'Atcelt',
           pomoAddBlockTitle:'Pievienot bloku', pomoBlockType:'Bloka tips',
-          pomoBlockWork:'🍅 Darbs', pomoBlockBreak:'☕ Pauze', pomoBlockLong:'🛋 Garā pauze',
+          pomoBlockWork:'Darbs', pomoBlockBreak:'Pauze', pomoBlockLong:'Garā pauze',
           pomoBlockDur:'Ilgums (min)', pomoBlockTask:'Saistīt ar uzdevumu (neobligāti)',
           taskboardTitle:'Uzdevumu Dēlis', taskboardSearch:'Meklēt...',
           taskboardNewTask:'Jauns uzdevums', taskboardNewCol:'Pievienot kolonnu',
@@ -1051,10 +1059,6 @@
         }
       },
 
-      async resendVerification() {
-        // verification disabled
-      },
-
       async loadFromApi() {
         try {
           const [colRes, taskRes] = await Promise.all([
@@ -1116,16 +1120,6 @@
             console.log('Notification permission denied')
           }
         })
-      }
-
-      // Load pomodoro settings from localStorage
-      const savedSettings = localStorage.getItem('pomo_settings')
-      if (savedSettings) {
-        try {
-          const ps = JSON.parse(savedSettings)
-          // PomodoroTool manages its own state; just store for reference
-          // Settings will be applied by PomodoroTool itself via its own data
-        } catch {}
       }
 
       try {
@@ -1255,7 +1249,7 @@
     color: #1c1c1c;
   }
 
-  .main-content { display: block; height: auto; }
+  .main-content { display: block; height: auto; padding-top: 20px !important; }
 
   .site-section {
     padding: 20px;

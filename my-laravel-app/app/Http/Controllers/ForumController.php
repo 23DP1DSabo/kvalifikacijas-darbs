@@ -28,7 +28,6 @@ class ForumController extends Controller
             ->with('user:id,name,username,profile_picture,role')
             ->withCount('comments');
 
-        // Search
         if ($search = trim($request->query('search', ''))) {
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
@@ -43,7 +42,6 @@ class ForumController extends Controller
             $query->whereHas('favorites', fn($q) => $q->where('user_id', $userId));
         }
 
-        // Sort
         match ($request->query('sort', 'latest')) {
             'oldest'  => $query->oldest(),
             'popular' => $query->orderByDesc('comments_count'),

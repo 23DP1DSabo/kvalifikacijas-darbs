@@ -4,7 +4,7 @@
       <v-card class="about-section site-section">
         <v-card-text>
           <h2>{{ s.aboutTitle }}</h2>
-          <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Facilis dolorum, aliquid minus inventore velit nulla ipsam omnis temporibus fugiat? Sit velit, excepturi dolor consectetur alias quam dolorem perspiciatis fugit assumenda!</p>
+          <p>TaskForge</p>
         </v-card-text>
 
         <v-row class="features-grid">
@@ -12,7 +12,7 @@
             <v-card class="feature-card">
               <v-card-text>
                 <h3>{{ s.aboutAuthor }}</h3>
-                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Mollitia laborum cumque voluptates, ea aliquam voluptas ad nisi. Esse quod nisi odit beatae. Optio est accusantium ipsa praesentium, non mollitia excepturi.</p>
+                <p>Projekta autors: Daniels Šabovičs DP3-1</p>
               </v-card-text>
             </v-card>
           </v-col>
@@ -21,7 +21,7 @@
             <v-card class="feature-card">
               <v-card-text>
                 <h3>{{ s.aboutProject }}</h3>
-                <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Accusantium nobis nam, dolorum adipisci dolor rem dolorem commodi, quae earum expedita cumque. Molestias officiis delectus eius vitae ea adipisci, rem repellendus?</p>
+                <p>Projekts sniedz lietotājam uzreiz vairākas metodes sava darbalaika plānošanai un organizēšanai, lai izvairītos no prokrastinācijas, izdeguma un citiem pārslodzes rezultātiem. Šobrīd neesmu atradis vietni, kas atbilstu šādām prasībām, tāpēc liecinu ka tādas platformas izveide ir lietderīga un aktuāla. Ar tās palīdzību cilvēki spēs ne tikai, attīstīt savas administratīvās prasmes un veikt vairāk darba īsākā laika sprīdī, bet arī cerams pašizglītoties šajā jomā no citiem un palīdzēt citiem ar līdzīgiem trūkumiem. Datu bāzē tiks glabāta informācija par tādiem elementiem kā lietotāji, forumi, publicējumi, komentāri un pulkstenis, matrica, kalendārs, uzdevumi, uzdevumu dēlis. </p>
               </v-card-text>
             </v-card>
           </v-col>
