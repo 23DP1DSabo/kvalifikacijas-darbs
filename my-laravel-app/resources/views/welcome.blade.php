@@ -4,7 +4,8 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title>Homepage</title>
+        <title>TaskForge — Produktivitātes rīki</title>
+        <meta name="description" content="TaskForge — bezmaksas produktivitātes rīki: Pomodoro taimeris, Uzdevumu dēlis, Eizenhauera Matrica un Uzdevumu Kalendārs.">
 
         <!----- Styles / Scripts ----->
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))

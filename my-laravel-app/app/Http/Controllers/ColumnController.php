@@ -36,6 +36,22 @@ class ColumnController extends Controller
         return response()->json($column, 201);
     }
 
+    public function update(Request $request, BoardColumn $column)
+    {
+        if ($column->user_id !== $request->user()->id) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $data = $request->validate([
+            'name'        => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'color'       => 'nullable|string|max:20',
+        ]);
+
+        $column->update($data);
+        return response()->json($column);
+    }
+
     public function destroy(Request $request, BoardColumn $column)
     {
         if ($column->user_id !== $request->user()->id) {

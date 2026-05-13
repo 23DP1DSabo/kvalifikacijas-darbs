@@ -16,8 +16,12 @@ class ContactController extends Controller
             'message' => 'required|string|max:2000',
         ]);
 
-        Mail::to('a230158ds@rvt.lv')
-            ->send(new ContactMessage($data['name'], $data['email'], $data['message']));
+        try {
+            Mail::to(env('CONTACT_EMAIL', 'admin@example.com'))
+                ->send(new ContactMessage($data['name'], $data['email'], $data['message']));
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Neizdevās nosūtīt ziņojumu. Mēģiniet vēlreiz.'], 500);
+        }
 
         return response()->json(['message' => 'Sent']);
     }

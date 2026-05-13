@@ -22,4 +22,9 @@ class ForumPost extends Model
     {
         return $this->hasMany(ForumComment::class, 'post_id');
     }
+
+    public function favorites()
+    {
+        return $this->hasMany(ForumFavorite::class, 'post_id');
+    }
 }

@@ -48,6 +48,13 @@ class AuthController extends Controller
             ]);
         }
 
+        if (Auth::user()->banned_at) {
+            Auth::logout();
+            throw ValidationException::withMessages([
+                'email' => ['Šis konts ir bloķēts.'],
+            ]);
+        }
+
         $request->session()->regenerate();
 
         return response()->json(['user' => Auth::user()]);

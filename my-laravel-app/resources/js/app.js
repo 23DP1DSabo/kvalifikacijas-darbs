@@ -23,19 +23,19 @@ const vuetify = createVuetify({
       light: {
         dark: false,
         colors: {
-          primary: '#764ba2',
-          secondary: '#667eea',
-          accent: '#82B1FF',
-          surface: '#ffffff',
-          background: '#f5f5f5',
+          primary: '#8B6E43',
+          secondary: '#6b4f2a',
+          accent: '#d4a851',
+          surface: '#faf6ef',
+          background: '#e4dccf',
         }
       },
       dark: {
         dark: true,
         colors: {
-          primary: '#764ba2',
-          secondary: '#667eea',
-          accent: '#82B1FF',
+          primary: '#d4a851',
+          secondary: '#8B6E43',
+          accent: '#d4a851',
           surface: '#1e1e1e',
           background: '#121212',
         }
@@ -47,9 +47,4 @@ const vuetify = createVuetify({
 createApp(App)
   .use(vuetify)
   .mount('#app')
-
-const saved = localStorage.getItem('darkMode')
-if (saved === 'true') {
-  vuetify.theme.global.name.value = 'dark'
-}
 

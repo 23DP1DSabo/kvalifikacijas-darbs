@@ -1,56 +1,180 @@
 <template>
   <v-app id="simple-app">
 
+    <a href="#main-content" class="skip-link">{{ s.skipToContent }}</a>
 
 <!-----Header----->
 
-    <v-app-bar class="site-header" elevation="4">
-      <v-toolbar-title class="header-logo" @click="currentPage = 'home'" style="cursor:pointer;">TaskForge</v-toolbar-title>
+    <v-app-bar class="site-header" elevation="0">
+      <v-toolbar-title class="header-logo" @click="currentPage = 'home'; navDrawer = false" style="cursor:pointer; flex:0 0 auto; max-width:fit-content;">TaskForge</v-toolbar-title>
       <v-spacer></v-spacer>
 
-      <div class="navigation">
-        <v-menu>
-          <template #activator="{ props }">
-            <v-btn text v-bind="props" :class="{ active: ['pomodoro','taskboard','matrix','calendar'].includes(currentPage) }">
-              Rīki <v-icon size="16" class="ml-1">mdi-chevron-down</v-icon>
+      <!-- Desktop navigation -->
+      <div class="desktop-nav">
+        <v-menu v-model="toolsMenuOpen" :close-on-content-click="true" location="bottom start">
+          <template v-slot:activator="{ props }">
+            <v-btn variant="text" class="desktop-nav-btn" v-bind="props">
+              Rīki <span class="riki-arrow">{{ toolsMenuOpen ? '▴' : '▾' }}</span>
             </v-btn>
           </template>
-          <v-list density="compact">
-            <v-list-item prepend-icon="mdi-timer" @click="currentPage = 'pomodoro'">
+          <v-list class="tools-dropdown" density="compact">
+            <v-list-item prepend-icon="mdi-timer" @click="currentPage = 'pomodoro'" :active="currentPage === 'pomodoro'">
               <v-list-item-title>Pomodoro</v-list-item-title>
             </v-list-item>
-            <v-list-item prepend-icon="mdi-format-list-checks" @click="currentPage = 'taskboard'">
-              <v-list-item-title>Uzdevumu Dēlis</v-list-item-title>
-            </v-list-item>
-            <v-list-item prepend-icon="mdi-grid" @click="currentPage = 'matrix'">
+            <v-list-item prepend-icon="mdi-grid" @click="currentPage = 'matrix'" :active="currentPage === 'matrix'">
               <v-list-item-title>Eizenhauera Matrica</v-list-item-title>
             </v-list-item>
-            <v-list-item prepend-icon="mdi-calendar" @click="currentPage = 'calendar'">
+            <v-list-item prepend-icon="mdi-calendar" @click="currentPage = 'calendar'" :active="currentPage === 'calendar'">
               <v-list-item-title>Kalendārs</v-list-item-title>
+            </v-list-item>
+            <v-list-item prepend-icon="mdi-format-list-checks" @click="currentPage = 'taskboard'" :active="currentPage === 'taskboard'">
+              <v-list-item-title>Uzdevumu Pārvaldnieks</v-list-item-title>
             </v-list-item>
           </v-list>
         </v-menu>
-        <v-btn text @click="currentPage = 'forum'" :class="{ active: currentPage === 'forum' }">Forums</v-btn>
-        <v-btn text @click="currentPage = 'about'" :class="{ active: currentPage === 'about' }">Par Mums</v-btn>
-        <v-btn text @click="currentPage = 'contact'" :class="{ active: currentPage === 'contact' }">Kontakti</v-btn>
-        <v-btn icon @click="toggleTheme" :title="darkMode ? 'Gaisma' : 'Tumsa'">
-          <v-icon>{{ darkMode ? 'mdi-weather-sunny' : 'mdi-moon-waning-crescent' }}</v-icon>
-        </v-btn>
+
+        <v-btn variant="text" class="desktop-nav-btn" :class="{ 'desktop-nav-active': currentPage === 'forum' }" @click="currentPage = 'forum'">{{ s.navForum }}</v-btn>
+        <v-btn variant="text" class="desktop-nav-btn" :class="{ 'desktop-nav-active': currentPage === 'about' }" @click="currentPage = 'about'">{{ s.navAbout }}</v-btn>
+        <v-btn variant="text" class="desktop-nav-btn" :class="{ 'desktop-nav-active': currentPage === 'contact' }" @click="currentPage = 'contact'">{{ s.navContact }}</v-btn>
+        <v-btn v-if="currentUser && currentUser.role === 'admin'" variant="text" class="desktop-nav-btn admin-nav-btn" :class="{ 'desktop-nav-active': currentPage === 'admin' }" @click="currentPage = 'admin'">{{ s.navAdmin }}</v-btn>
+
+        <v-menu v-model="a11yMenuOpen" :close-on-content-click="false" location="bottom end">
+          <template v-slot:activator="{ props }">
+            <v-btn variant="text" class="desktop-nav-btn" v-bind="props">
+              {{ s.navA11y }} <span class="riki-arrow">{{ a11yMenuOpen ? '▴' : '▾' }}</span>
+            </v-btn>
+          </template>
+          <v-list class="tools-dropdown" density="compact">
+            <v-list-item @click="toggleTheme">
+              <template v-slot:prepend>
+                <span class="theme-icon" :class="darkMode ? 'theme-sun' : 'theme-moon'" style="margin-right:18px;"></span>
+              </template>
+              <v-list-item-title>{{ darkMode ? s.lightTheme : s.darkTheme }}</v-list-item-title>
+            </v-list-item>
+            <v-list-item @click="toggleLanguage">
+              <template v-slot:prepend>
+                <span class="lang-flag">{{ language === 'lv' ? '🇬🇧' : '🇱🇻' }}</span>
+              </template>
+              <v-list-item-title>{{ language === 'lv' ? s.switchToEn : s.switchToLv }}</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+
         <template v-if="currentUser">
-          <span class="nav-user">{{ currentUser.name }} {{ currentUser.surname }}</span>
-          <v-btn text @click="logout">Iziet</v-btn>
+          <span class="desktop-nav-username" style="cursor:pointer" @click="showProfileDialog = true">
+            <img v-if="currentUser.avatar_url" :src="currentUser.avatar_url" class="nav-avatar" :alt="currentUser.name">
+            <span v-else class="nav-avatar-initials">{{ currentUser.name[0] }}{{ currentUser.surname ? currentUser.surname[0] : '' }}</span>
+            {{ currentUser.name }}
+          </span>
+          <v-btn variant="text" class="desktop-nav-btn" @click="logout()">{{ s.navLogout }}</v-btn>
         </template>
-        <v-btn v-else text @click="showLoginWindow = true">Pieslēgties</v-btn>
+        <template v-else>
+          <v-btn color="primary" variant="elevated" size="small" class="desktop-nav-login" @click="showLoginWindow = true">{{ s.navLogin }}</v-btn>
+        </template>
       </div>
+
+      <!-- Mobile burger -->
+      <v-btn icon variant="text" class="nav-burger-btn" @click="navDrawer = !navDrawer">
+        <span class="burger-icon">
+          <span></span>
+          <span></span>
+          <span></span>
+        </span>
+      </v-btn>
     </v-app-bar>
+
+    <div v-if="navDrawer" class="mobile-nav-overlay" @click="navDrawer = false"></div>
+
+    <v-navigation-drawer v-model="navDrawer" location="right" temporary width="280" class="nav-drawer">
+      <div class="drawer-header">
+        <span class="drawer-logo">TaskForge</span>
+        <v-btn icon variant="text" @click="navDrawer = false" color="#d4a851">
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+      </div>
+
+      <div class="drawer-section-label">{{ s.navTools }}</div>
+      <v-list density="compact" nav>
+        <v-list-item prepend-icon="mdi-timer" @click="currentPage = 'pomodoro'; navDrawer = false" :active="currentPage === 'pomodoro'">
+          <v-list-item-title>{{ s.toolPomodoro }}</v-list-item-title>
+        </v-list-item>
+        <v-list-item prepend-icon="mdi-format-list-checks" @click="currentPage = 'taskboard'; navDrawer = false" :active="currentPage === 'taskboard'">
+          <v-list-item-title>{{ s.toolTaskboard }}</v-list-item-title>
+        </v-list-item>
+        <v-list-item prepend-icon="mdi-grid" @click="currentPage = 'matrix'; navDrawer = false" :active="currentPage === 'matrix'">
+          <v-list-item-title>{{ s.toolMatrix }}</v-list-item-title>
+        </v-list-item>
+        <v-list-item prepend-icon="mdi-calendar" @click="currentPage = 'calendar'; navDrawer = false" :active="currentPage === 'calendar'">
+          <v-list-item-title>{{ s.toolCalendar }}</v-list-item-title>
+        </v-list-item>
+      </v-list>
+
+      <v-divider style="border-color:#8B6E43;opacity:.3;"></v-divider>
+
+      <v-list density="compact" nav>
+        <v-list-item prepend-icon="mdi-forum-outline" @click="currentPage = 'forum'; navDrawer = false" :active="currentPage === 'forum'">
+          <v-list-item-title>{{ s.navForum }}</v-list-item-title>
+        </v-list-item>
+        <v-list-item prepend-icon="mdi-information-outline" @click="currentPage = 'about'; navDrawer = false" :active="currentPage === 'about'">
+          <v-list-item-title>{{ s.navAbout }}</v-list-item-title>
+        </v-list-item>
+        <v-list-item prepend-icon="mdi-email-outline" @click="currentPage = 'contact'; navDrawer = false" :active="currentPage === 'contact'">
+          <v-list-item-title>{{ s.navContact }}</v-list-item-title>
+        </v-list-item>
+        <v-list-item v-if="currentUser && currentUser.role === 'admin'" prepend-icon="mdi-shield-crown-outline" @click="currentPage = 'admin'; navDrawer = false" :active="currentPage === 'admin'" class="admin-drawer-item">
+          <v-list-item-title>{{ s.navAdmin }}</v-list-item-title>
+        </v-list-item>
+      </v-list>
+
+      <v-divider style="border-color:#8B6E43;opacity:.3;"></v-divider>
+
+      <div class="drawer-section-label">{{ s.navA11y }}</div>
+      <v-list density="compact" nav>
+        <v-list-item @click="toggleTheme">
+          <template v-slot:prepend>
+            <span class="theme-icon theme-icon-drawer" :class="darkMode ? 'theme-sun' : 'theme-moon'"></span>
+          </template>
+          <v-list-item-title>{{ darkMode ? s.lightTheme : s.darkTheme }}</v-list-item-title>
+        </v-list-item>
+        <v-list-item @click="toggleLanguage; navDrawer = false">
+          <template v-slot:prepend>
+            <span class="lang-flag lang-flag-drawer">{{ language === 'lv' ? '🇬🇧' : '🇱🇻' }}</span>
+          </template>
+          <v-list-item-title>{{ language === 'lv' ? s.switchToEn : s.switchToLv }}</v-list-item-title>
+        </v-list-item>
+      </v-list>
+
+      <template v-if="currentUser">
+        <v-divider style="border-color:#8B6E43;opacity:.3;"></v-divider>
+        <div class="drawer-user">
+          <v-icon color="#8B6E43">mdi-account-circle</v-icon>
+          <span>{{ currentUser.name }} {{ currentUser.surname }}</span>
+        </div>
+        <v-list density="compact" nav>
+          <v-list-item prepend-icon="mdi-logout" @click="logout(); navDrawer = false">
+            <v-list-item-title>{{ s.navLogout }}</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </template>
+      <template v-else>
+        <v-divider style="border-color:#8B6E43;opacity:.3;"></v-divider>
+        <div class="drawer-login-btn">
+          <v-btn color="primary" variant="elevated" block @click="showLoginWindow = true; navDrawer = false">
+            {{ s.navLogin }}
+          </v-btn>
+        </div>
+      </template>
+    </v-navigation-drawer>
 
 
 <!-----Basics----->
 <!-- Homepage -->
 
+    <div id="main-content" tabindex="-1" style="position:absolute;top:0;left:0;width:1px;height:1px;overflow:hidden;"></div>
+
     <v-main v-if="currentPage === 'home'" class="main-content">
       <v-container fluid class="hero-section">
-        <h1 class="site-title">Galvenā lapa</h1>
+        <h1 class="site-title">{{ s.homeTitle }}</h1>
         <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Necessitatibus doloremque sequi nulla inventore blanditiis! Omnis alias doloribus possimus nemo? Blanditiis amet quam libero cum, reprehenderit laudantium corrupti obcaecati modi ad.</p>
       </v-container>
 
@@ -67,39 +191,39 @@
 <!-- Cards -->
 
       <v-container fluid class="py-8">
-        <v-row align="stretch">
-          <v-col cols="12" sm="6" md="3">
+        <v-row align="stretch" class="home-cards-row">
+          <v-col cols="12" sm="6" md="3" class="home-card-col">
             <v-card class="card" id="pomodoro-card" @click="currentPage = 'pomodoro'">
               <v-card-text class="card-in-card">
-                <h3>Pomodoro Pulkstenis</h3>
-                <p>Strādājiet un atpūtieites pēc noteikta laika grafika.</p>
+                <h3>{{ s.card1Title }}</h3>
+                <p>{{ s.card1Desc }}</p>
               </v-card-text>
             </v-card>
           </v-col>
 
-          <v-col cols="12" sm="6" md="3">
+          <v-col cols="12" sm="6" md="3" class="home-card-col">
             <v-card class="card" id="task-card" @click="currentPage = 'taskboard'">
               <v-card-text class="card-in-card">
-                <h3>Mērķu Plānotājs</h3>
-                <p>Organizējiet savus mērķus ilgtermiņā.</p>
+                <h3>{{ s.card2Title }}</h3>
+                <p>{{ s.card2Desc }}</p>
               </v-card-text>
             </v-card>
           </v-col>
 
-          <v-col cols="12" sm="6" md="3">
+          <v-col cols="12" sm="6" md="3" class="home-card-col">
             <v-card class="card" id="eisenhower-card" @click="currentPage = 'matrix'">
               <v-card-text class="card-in-card">
-                <h3>Eizenhauera Matrica</h3>
-                <p>Nosakidrojiet kādus mērķus sasniegt pirms citiem.</p>
+                <h3>{{ s.card3Title }}</h3>
+                <p>{{ s.card3Desc }}</p>
               </v-card-text>
             </v-card>
           </v-col>
 
-          <v-col cols="12" sm="6" md="3">
+          <v-col cols="12" sm="6" md="3" class="home-card-col">
             <v-card class="card" id="calendar-card" @click="currentPage = 'calendar'">
               <v-card-text class="card-in-card">
-                <h3>Uzdevumu Kalendārs</h3>
-                <p>Lieciet atgādinājumus notikumiem vai termiņiem.</p>
+                <h3>{{ s.card4Title }}</h3>
+                <p>{{ s.card4Desc }}</p>
               </v-card-text>
             </v-card>
           </v-col>
@@ -107,796 +231,45 @@
       </v-container>
     </v-main>
 
-
-<!-- Forum -->
-
-    <v-main v-else-if="currentPage === 'forum'" class="main-content">
-      <v-container fluid class="py-8 forum-container">
-
-        <!-- ── View: Category list ── -->
-        <template v-if="forumView === 'categories'">
-          <div class="forum-header mb-6">
-            <h2 class="forum-title">Forums</h2>
-            <p class="forum-subtitle">Izvēlies kategoriju, lai sāktu vai lasītu diskusijas</p>
-          </div>
-
-          <div v-if="forumLoading" class="text-center py-10">
-            <v-progress-circular indeterminate color="primary"></v-progress-circular>
-          </div>
-
-          <v-row v-else>
-            <v-col v-for="cat in forumCategories" :key="cat.id" cols="12" sm="6">
-              <v-card class="forum-cat-card" :style="{ borderLeftColor: cat.color }" @click="openForumCategory(cat)">
-                <v-card-text class="d-flex align-center gap-3">
-                  <v-icon :color="cat.color" size="36">{{ cat.icon }}</v-icon>
-                  <div style="flex:1; min-width:0">
-                    <div class="forum-cat-name">{{ cat.name }}</div>
-                    <div class="forum-cat-desc">{{ cat.description }}</div>
-                  </div>
-                  <v-chip size="small" variant="tonal" style="white-space:nowrap">{{ cat.posts_count }}</v-chip>
-                </v-card-text>
-              </v-card>
-            </v-col>
-          </v-row>
-        </template>
-
-        <!-- ── View: Posts in category ── -->
-        <template v-else-if="forumView === 'posts'">
-          <v-btn variant="text" prepend-icon="mdi-arrow-left" class="mb-3" @click="forumView = 'categories'">Visi forumi</v-btn>
-
-          <div class="forum-cat-header mb-4">
-            <div>
-              <h2 class="forum-title">
-                <v-icon :color="forumCategory.color" class="mr-2">{{ forumCategory.icon }}</v-icon>
-                {{ forumCategory.name }}
-              </h2>
-              <p class="forum-subtitle">{{ forumCategory.description }}</p>
-            </div>
-            <v-btn v-if="currentUser" color="primary" variant="elevated" prepend-icon="mdi-pencil-outline" @click="showNewPostDialog = true">
-              Jauns ieraksts
-            </v-btn>
-            <v-btn v-else variant="tonal" @click="showLoginWindow = true">Piesakies, lai rakstītu</v-btn>
-          </div>
-
-          <div v-if="forumLoading" class="text-center py-10">
-            <v-progress-circular indeterminate color="primary"></v-progress-circular>
-          </div>
-          <div v-else-if="forumPosts.length === 0" class="forum-empty-state">
-            Nav ierakstu šajā kategorijā. Esi pirmais!
-          </div>
-
-          <v-card v-for="post in forumPosts" :key="post.id"
-                  class="forum-post-item mb-2"
-                  @click="openForumPost(post)">
-            <v-card-text>
-              <div class="forum-post-title">{{ post.title }}</div>
-              <div class="forum-post-meta">
-                <v-icon size="13" class="mr-1">mdi-account-outline</v-icon>{{ post.user.name }}
-                <span class="mx-2">·</span>
-                <v-icon size="13" class="mr-1">mdi-clock-outline</v-icon>{{ timeAgo(post.created_at) }}
-                <span class="mx-2">·</span>
-                <v-icon size="13" class="mr-1">mdi-comment-outline</v-icon>{{ post.comments_count }}
-              </div>
-            </v-card-text>
-          </v-card>
-        </template>
-
-        <!-- ── View: Post detail ── -->
-        <template v-else-if="forumView === 'post'">
-          <v-btn variant="text" prepend-icon="mdi-arrow-left" class="mb-3"
-                 @click="forumView = 'posts'">Atpakaļ uz {{ forumCategory?.name }}</v-btn>
-
-          <div v-if="forumLoading" class="text-center py-10">
-            <v-progress-circular indeterminate color="primary"></v-progress-circular>
-          </div>
-
-          <template v-else-if="forumPostData">
-            <!-- Post body -->
-            <v-card class="mb-4">
-              <v-card-text>
-                <h2 class="forum-post-detail-title">{{ forumPostData.post.title }}</h2>
-                <div class="forum-post-detail-meta mb-4">
-                  <v-icon size="14" class="mr-1">mdi-account-outline</v-icon>{{ forumPostData.post.user.name }}
-                  <span class="mx-2">·</span>
-                  <v-icon size="14" class="mr-1">mdi-clock-outline</v-icon>{{ timeAgo(forumPostData.post.created_at) }}
-                </div>
-                <div class="forum-post-body">{{ forumPostData.post.body }}</div>
-              </v-card-text>
-            </v-card>
-
-            <!-- Add comment -->
-            <v-card class="mb-5">
-              <v-card-text v-if="currentUser">
-                <div class="forum-comment-form-label mb-2">Komentē kā <strong>{{ currentUser.name }}</strong></div>
-                <v-textarea v-model="forumNewComment" variant="outlined" density="compact" rows="3"
-                            placeholder="Raksti komentāru..." hide-details class="mb-3"></v-textarea>
-                <div class="d-flex justify-end">
-                  <v-btn color="primary" variant="elevated"
-                         :disabled="!forumNewComment.trim()"
-                         @click="submitForumComment">Publicēt</v-btn>
-                </div>
-              </v-card-text>
-              <v-card-text v-else class="text-center py-4">
-                <v-btn variant="tonal" @click="showLoginWindow = true">Piesakies, lai komentētu</v-btn>
-              </v-card-text>
-            </v-card>
-
-            <!-- Comments -->
-            <div class="forum-comments-header mb-3">
-              Komentāri ({{ forumPostData.comments.length }})
-            </div>
-
-            <div v-if="forumPostData.comments.length === 0" class="forum-empty-state mb-4">
-              Nav komentāru. Esi pirmais!
-            </div>
-
-            <v-card v-for="comment in forumPostData.comments" :key="comment.id" class="forum-comment-card mb-2">
-              <v-card-text>
-                <div class="forum-comment-header">
-                  <v-icon size="16" class="mr-1">mdi-account-circle-outline</v-icon>
-                  <span class="forum-comment-author">{{ comment.user.name }}</span>
-                  <span class="forum-comment-time">{{ timeAgo(comment.created_at) }}</span>
-                </div>
-                <div class="forum-comment-body">{{ comment.body }}</div>
-                <div class="forum-comment-votes mt-3">
-                  <button class="forum-vote-btn forum-vote-up"
-                          :class="{ active: comment.user_vote === 1 }"
-                          @click="castVote(comment, 1)">
-                    <v-icon size="15">mdi-arrow-up-bold</v-icon>
-                    <span>{{ comment.upvotes }}</span>
-                  </button>
-                  <button class="forum-vote-btn forum-vote-down"
-                          :class="{ active: comment.user_vote === -1 }"
-                          @click="castVote(comment, -1)">
-                    <v-icon size="15">mdi-arrow-down-bold</v-icon>
-                    <span>{{ comment.downvotes }}</span>
-                  </button>
-                </div>
-              </v-card-text>
-            </v-card>
-          </template>
-        </template>
-
-      </v-container>
-
-      <!-- New post dialog -->
-      <v-dialog v-model="showNewPostDialog" max-width="620">
-        <v-card>
-          <v-card-title class="bg-primary text-white">
-            <div class="d-flex justify-space-between align-center">
-              <span>Jauns ieraksts — {{ forumCategory?.name }}</span>
-              <v-btn icon="mdi-close" variant="text" @click="showNewPostDialog = false"></v-btn>
-            </div>
-          </v-card-title>
-          <v-card-text class="pt-4">
-            <v-text-field v-model="forumNewPost.title" label="Virsraksts" variant="outlined" density="compact" class="mb-3"></v-text-field>
-            <v-textarea v-model="forumNewPost.body" label="Saturs" variant="outlined" rows="7" hide-details></v-textarea>
-          </v-card-text>
-          <v-card-actions class="pa-4 pt-0">
-            <v-spacer></v-spacer>
-            <v-btn variant="text" @click="showNewPostDialog = false">Atcelt</v-btn>
-            <v-btn color="primary" variant="elevated"
-                   :disabled="!forumNewPost.title.trim() || !forumNewPost.body.trim()"
-                   @click="submitForumPost">Publicēt</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-    </v-main>
-
-
-<!-- About page -->
-
-    <v-main v-else-if="currentPage === 'about'" class="main-content">
-      <v-container fluid class="py-8">
-        <v-card class="about-section site-section">
-          <v-card-text>
-            <h2>Par Mums</h2>
-            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Facilis dolorum, aliquid minus inventore velit nulla ipsam omnis temporibus fugiat? Sit velit, excepturi dolor consectetur alias quam dolorem perspiciatis fugit assumenda!</p>
-          </v-card-text>
-
-          <v-row class="features-grid">
-            <v-col cols="12" sm="6">
-              <v-card class="feature-card">
-                <v-card-text>
-                  <h3>Par autoru</h3>
-                  <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Mollitia laborum cumque voluptates, ea aliquam voluptas ad nisi. Esse quod nisi odit beatae. Optio est accusantium ipsa praesentium, non mollitia excepturi.</p>
-                </v-card-text>
-              </v-card>
-            </v-col>
-
-            <v-col cols="12" sm="6">
-              <v-card class="feature-card">
-                <v-card-text>
-                  <h3>Par projektu</h3>
-                  <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Accusantium nobis nam, dolorum adipisci dolor rem dolorem commodi, quae earum expedita cumque. Molestias officiis delectus eius vitae ea adipisci, rem repellendus?</p>
-                </v-card-text>
-              </v-card>
-            </v-col>
-          </v-row>
-        </v-card>
-      </v-container>
-    </v-main>
-
-
-<!-- Contacts -->
-
-    <v-main v-else-if="currentPage === 'contact'" class="main-content">
-      <v-container fluid class="py-8">
-        <v-card class="contact-section site-section">
-          <v-card-text>
-            <h2>Kontakti</h2>
-          </v-card-text>
-
-          <v-row class="contact-content">
-            <v-col cols="12" sm="6">
-              <v-card class="contact-info">
-                <v-card-text>
-                  <h3>Sazinies ar autoru!</h3>
-                  <p><strong>Epasts:</strong> a230158ds@rvt.lv</p>
-                  <p><strong>Tālrunis:</strong> (+371) 28 105 787</p>
-                </v-card-text>
-              </v-card>
-            </v-col>
-
-            <v-col cols="12" sm="6">
-              <v-card class="contact-form">
-                <v-card-text>
-                  <h3>Nosūti ziņojumu!</h3>
-                  <v-alert v-if="contactSent" type="success" variant="tonal" class="mb-4">
-                    Paldies! Jūsu ziņojums ir nosūtīts.
-                  </v-alert>
-                  <v-form v-else @submit.prevent="submitContact">
-                    <v-text-field v-model="contactForm.name" label="Jūsu vārds un uzvārds" required class="mb-4"></v-text-field>
-                    <v-text-field v-model="contactForm.email" label="Jūsu epasts" type="email" required class="mb-4"></v-text-field>
-                    <v-textarea v-model="contactForm.message" label="Jūsu ziņojums" required class="mb-4"></v-textarea>
-                    <v-btn type="submit" color="primary" variant="elevated" block :loading="contactLoading">Sūtīt</v-btn>
-                  </v-form>
-                </v-card-text>
-              </v-card>
-            </v-col>
-          </v-row>
-        </v-card>
-      </v-container>
-    </v-main>
-
-
-<!-- Pomodoro clock -->
-
-    <v-main v-else-if="currentPage === 'pomodoro'" class="main-content">
-      <v-container fluid class="py-8 pomo-container">
-        <div class="pomo-layout">
-
-          <!-- LEFT: Timer card -->
-          <v-card class="pomo-card site-section" :class="`pomo-phase-${currentPhase}`">
-            <v-card-text class="pomo-card-body">
-
-              <!-- Top row: mode switcher + gear -->
-              <div class="pomo-top-row">
-                <div class="pomo-mode-switcher">
-                  <button class="pomo-mode-btn" :class="{ active: pomodoroMode === 'cycle' }" @click="setMode('cycle')">Ciklu</button>
-                  <button class="pomo-mode-btn" :class="{ active: pomodoroMode === 'queue' }" @click="setMode('queue')">Sesija</button>
-                </div>
-                <button class="pomo-gear-btn" @click="showPomodoroSettings = true" title="Iestatījumi">
-                  <v-icon size="20">mdi-cog-outline</v-icon>
-                </button>
-              </div>
-
-              <!-- Cycle mode: phase tabs -->
-              <div v-if="pomodoroMode === 'cycle'" class="pomo-tabs">
-                <button class="pomo-tab" :class="{ active: currentPhase === 'work' }"      @click="switchPhase('work')">Pomodoro</button>
-                <button class="pomo-tab" :class="{ active: currentPhase === 'break' }"     @click="switchPhase('break')">Īsā pauze</button>
-                <button class="pomo-tab" :class="{ active: currentPhase === 'longBreak' }" @click="switchPhase('longBreak')">Garā pauze</button>
-              </div>
-
-              <!-- Queue mode: block indicator -->
-              <div v-else class="pomo-queue-indicator">
-                <template v-if="sessionQueue.length > 0 && currentQueueIndex < sessionQueue.length">
-                  <v-icon size="14" class="mr-1">{{ currentPhase === 'work' ? 'mdi-timer' : 'mdi-coffee' }}</v-icon>
-                  {{ sessionQueue[currentQueueIndex].label }}
-                  <span class="pomo-queue-pos"> · {{ currentQueueIndex + 1 }}/{{ sessionQueue.length }}</span>
-                </template>
-                <span v-else-if="currentQueueIndex >= sessionQueue.length && sessionQueue.length > 0">✓ Sesija pabeigta!</span>
-                <span v-else class="pomo-queue-hint">Pievieno blokus →</span>
-              </div>
-
-              <!-- Focused task label -->
-              <div class="pomo-focus-label" v-if="focusedTask">
-                <v-icon size="14" class="mr-1">mdi-target</v-icon>
-                {{ focusedTask.title }}
-              </div>
-
-              <!-- Timer -->
-              <div class="pomo-timer">{{ formatTime(pomodoroTime) }}</div>
-
-              <!-- Controls -->
-              <div class="pomo-controls">
-                <v-btn v-if="!isPomodoroRunning" class="pomo-start-btn" variant="elevated" size="large"
-                       @click="startPomodoro"
-                       :disabled="pomodoroMode === 'queue' && (sessionQueue.length === 0 || currentQueueIndex >= sessionQueue.length)">
-                  START
-                </v-btn>
-                <v-btn v-else class="pomo-start-btn" variant="elevated" size="large" @click="pausePomodoro">
-                  PAUZE
-                </v-btn>
-                <v-btn v-if="isPomodoroRunning" icon variant="text" class="pomo-icon-btn" @click="skipPhase" title="Izlaist">
-                  <v-icon>mdi-skip-next</v-icon>
-                </v-btn>
-                <v-btn icon variant="text" class="pomo-icon-btn" @click="resetPomodoro" title="Atiestatīt">
-                  <v-icon>mdi-restart</v-icon>
-                </v-btn>
-              </div>
-
-              <!-- Meta row -->
-              <div class="pomo-meta-row">
-                <span v-if="pomodoroMode === 'cycle'" class="pomo-session-label">#{{ sessionNumber }} · {{ cyclesCompleted }} cikli</span>
-                <span v-else class="pomo-session-label"></span>
-                <v-switch v-model="pomodoroAutoStart" label="Auto-start" density="compact" hide-details color="white" class="pomo-autostart"></v-switch>
-              </div>
-
-            </v-card-text>
-          </v-card>
-
-          <!-- RIGHT: tasks + queue panel -->
-          <div class="pomo-right-panel">
-            <v-tabs v-model="rightPanelTab" color="primary" density="compact" class="pomo-panel-tabs mb-2">
-              <v-tab value="tasks">Uzdevumi</v-tab>
-              <v-tab value="queue">Sesijas plāns</v-tab>
-            </v-tabs>
-
-            <!-- Tasks tab -->
-            <v-card v-if="rightPanelTab === 'tasks'" class="pomo-tasks-card site-section">
-              <v-card-text>
-                <div class="pomo-tasks-header">
-                  <span class="pomo-tasks-title">Uzdevumi</span>
-                  <v-btn size="small" variant="tonal" prepend-icon="mdi-plus" @click="openTaskDialog()">Pievienot</v-btn>
-                </div>
-                <v-divider class="my-3"></v-divider>
-                <div v-if="tasks.length === 0" class="pomo-empty">Nav uzdevumu. Pievieno pirmo!</div>
-                <div v-for="task in tasks" :key="task.id"
-                     class="pomo-task-row"
-                     :class="{ 'pomo-task-focused': focusedTaskId === task.id, 'pomo-task-done': task.status === 'completed' }">
-                  <v-btn icon size="x-small" variant="text" @click="focusedTaskId = (focusedTaskId === task.id ? null : task.id)">
-                    <v-icon size="18">{{ focusedTaskId === task.id ? 'mdi-radiobox-marked' : 'mdi-radiobox-blank' }}</v-icon>
-                  </v-btn>
-                  <span class="pomo-task-name" @click="openTaskDialog(task)">{{ task.title }}</span>
-                  <span class="pomo-task-count">
-                    <v-icon size="13" class="mr-1" style="color:#e74c3c">mdi-timer</v-icon>
-                    {{ task.done_pomodoros || 0 }} / {{ task.est_pomodoros || 1 }}
-                  </span>
-                  <v-btn icon size="x-small" variant="text" @click="toggleTaskDone(task)">
-                    <v-icon size="18" :color="task.status === 'completed' ? 'success' : ''">
-                      {{ task.status === 'completed' ? 'mdi-check-circle' : 'mdi-circle-outline' }}
-                    </v-icon>
-                  </v-btn>
-                </div>
-              </v-card-text>
-            </v-card>
-
-            <!-- Queue tab -->
-            <v-card v-else class="pomo-tasks-card site-section">
-              <v-card-text>
-                <div class="pomo-tasks-header">
-                  <span class="pomo-tasks-title">Sesijas plāns</span>
-                  <v-btn size="small" variant="tonal" prepend-icon="mdi-plus" @click="showQueueDialog = true">Pievienot bloku</v-btn>
-                </div>
-                <v-divider class="my-3"></v-divider>
-
-                <div v-if="sessionQueue.length === 0" class="pomo-empty">
-                  Nav bloku. Pievieno darba vai pauzes blokus!
-                </div>
-
-                <div v-for="(block, idx) in sessionQueue" :key="block.id"
-                     class="pomo-queue-row"
-                     :class="{ 'pomo-queue-active': pomodoroMode === 'queue' && idx === currentQueueIndex,
-                               'pomo-queue-done':   pomodoroMode === 'queue' && idx < currentQueueIndex }">
-                  <v-icon size="16" :style="{ color: block.type === 'work' ? '#c0392b' : '#27ae60' }" class="mr-1">
-                    {{ block.type === 'work' ? 'mdi-timer' : 'mdi-coffee' }}
-                  </v-icon>
-                  <span class="pomo-queue-label">{{ block.label }}</span>
-                  <span class="pomo-queue-dur">{{ block.minutes }}min</span>
-                  <v-btn icon size="x-small" variant="text" :disabled="idx === 0" @click="moveQueueBlock(idx, -1)">
-                    <v-icon size="14">mdi-arrow-up</v-icon>
-                  </v-btn>
-                  <v-btn icon size="x-small" variant="text" :disabled="idx === sessionQueue.length - 1" @click="moveQueueBlock(idx, 1)">
-                    <v-icon size="14">mdi-arrow-down</v-icon>
-                  </v-btn>
-                  <v-btn icon size="x-small" variant="text" color="error" @click="removeQueueBlock(idx)">
-                    <v-icon size="14">mdi-close</v-icon>
-                  </v-btn>
-                </div>
-
-                <div v-if="sessionQueue.length > 0" class="pomo-queue-total mt-3">
-                  Kopā: {{ sessionQueueTotal }} min
-                </div>
-              </v-card-text>
-            </v-card>
-          </div>
-        </div>
-
-        <div class="tool-bottom-nav mt-4">
-          <v-btn variant="tonal" prepend-icon="mdi-arrow-left" @click="currentPage = 'home'">Atpakaļ</v-btn>
-          <div class="tool-links">
-            <v-btn variant="text" size="small" prepend-icon="mdi-format-list-checks" @click="currentPage = 'taskboard'">Uzdevumu Dēlis</v-btn>
-            <v-btn variant="text" size="small" prepend-icon="mdi-grid" @click="currentPage = 'matrix'">Matrica</v-btn>
-            <v-btn variant="text" size="small" prepend-icon="mdi-calendar" @click="currentPage = 'calendar'">Kalendārs</v-btn>
-          </div>
-        </div>
-      </v-container>
-
-      <!-- Settings dialog -->
-      <v-dialog v-model="showPomodoroSettings" max-width="360">
-        <v-card>
-          <v-card-title class="bg-primary text-white">
-            <div class="d-flex justify-space-between align-center">
-              <span>Laika iestatījumi</span>
-              <v-btn icon="mdi-close" variant="text" @click="showPomodoroSettings = false"></v-btn>
-            </div>
-          </v-card-title>
-          <v-card-text class="pt-5">
-            <v-text-field v-model.number="settingsForm.pomo"  label="Pomodoro (min)" type="number" min="1" max="60" variant="outlined" density="compact" class="mb-3"></v-text-field>
-            <v-text-field v-model.number="settingsForm.short" label="Īsā pauze (min)" type="number" min="1" max="30" variant="outlined" density="compact" class="mb-3"></v-text-field>
-            <v-text-field v-model.number="settingsForm.long"  label="Garā pauze (min)" type="number" min="1" max="60" variant="outlined" density="compact"></v-text-field>
-          </v-card-text>
-          <v-card-actions class="pa-4 pt-0">
-            <v-spacer></v-spacer>
-            <v-btn variant="text" @click="showPomodoroSettings = false">Atcelt</v-btn>
-            <v-btn color="primary" variant="elevated" @click="applyPomodoroSettings">Saglabāt</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-
-      <!-- Queue block dialog -->
-      <v-dialog v-model="showQueueDialog" max-width="360">
-        <v-card>
-          <v-card-title class="bg-primary text-white">
-            <div class="d-flex justify-space-between align-center">
-              <span>Pievienot bloku</span>
-              <v-btn icon="mdi-close" variant="text" @click="showQueueDialog = false"></v-btn>
-            </div>
-          </v-card-title>
-          <v-card-text class="pt-5">
-            <div class="mb-3 text-body-2 text-medium-emphasis">Bloka tips</div>
-            <v-btn-toggle v-model="queueForm.type" mandatory class="mb-4" color="primary" variant="outlined" density="compact" style="width:100%">
-              <v-btn value="work" style="flex:1">🍅 Darbs</v-btn>
-              <v-btn value="break" style="flex:1">☕ Pauze</v-btn>
-              <v-btn value="longBreak" style="flex:1">🛋 Garā pauze</v-btn>
-            </v-btn-toggle>
-            <v-text-field v-model.number="queueForm.minutes" label="Ilgums (min)" type="number" min="1" max="120" variant="outlined" density="compact" class="mb-3"></v-text-field>
-            <v-select v-if="queueForm.type === 'work'"
-                      v-model="queueForm.taskId"
-                      :items="tasks.map(t => ({ title: t.title, value: t.id }))"
-                      label="Saistīt ar uzdevumu (neobligāti)"
-                      clearable variant="outlined" density="compact"></v-select>
-          </v-card-text>
-          <v-card-actions class="pa-4 pt-0">
-            <v-spacer></v-spacer>
-            <v-btn variant="text" @click="showQueueDialog = false">Atcelt</v-btn>
-            <v-btn color="primary" variant="elevated" @click="addQueueBlock">Pievienot</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-    </v-main>
-
-
-<!-- Task board -->
-
-    <v-main v-else-if="currentPage === 'taskboard'" class="main-content">
-      <v-container fluid class="py-8">
-        <v-card class="taskboard-section site-section">
-          <v-card-text>
-
-            <!-- Board toolbar -->
-            <div class="board-toolbar mb-4">
-              <div class="d-flex align-center gap-2">
-                <h2 class="board-title">Uzdevumu Dēlis</h2>
-                <v-chip size="small" variant="tonal" color="primary">
-                  {{ tasks.length }} uzdevumi
-                </v-chip>
-              </div>
-              <div class="d-flex align-center gap-2 flex-wrap">
-                <v-text-field
-                  v-model="boardFilter"
-                  placeholder="Meklēt..."
-                  prepend-inner-icon="mdi-magnify"
-                  variant="outlined"
-                  density="compact"
-                  clearable
-                  hide-details
-                  style="max-width:220px"
-                ></v-text-field>
-                <v-btn color="primary" variant="elevated" prepend-icon="mdi-plus" @click="openTaskDialog()">
-                  Jauns uzdevums
-                </v-btn>
-              </div>
-            </div>
-
-            <!-- Board -->
-            <div class="trello-board">
-              <div v-for="col in columns" :key="col.id"
-                   class="trello-column"
-                   :class="{ 'drag-over': dragOverColumn === col.id, 'col-collapsed': collapsedColumns.includes(col.id) }"
-                   @dragover.prevent="dragOverColumn = col.id"
-                   @dragleave.self="dragOverColumn = null"
-                   @drop="onDropToColumn(col.id); dragOverColumn = null">
-
-                <!-- Column header -->
-                <div class="trello-col-header" :style="{ borderBottomColor: col.color || '#764ba2' }">
-                  <div class="trello-col-meta">
-                    <div class="d-flex align-center gap-2">
-                      <span class="trello-col-name">{{ col.name }}</span>
-                      <span class="trello-col-count" :style="{ background: col.color || '#764ba2' }">
-                        {{ tasksByColumn(col.id).length }}
-                      </span>
-                    </div>
-                    <span v-if="col.description && !collapsedColumns.includes(col.id)" class="trello-col-desc">
-                      {{ col.description }}
-                    </span>
-                    <span v-if="!collapsedColumns.includes(col.id)" class="trello-col-time">
-                      {{ formatColDate(col.createdAt) }}
-                    </span>
-                  </div>
-                  <div class="d-flex" style="flex-shrink:0">
-                    <v-btn icon size="x-small" variant="text" @click="toggleCollapse(col.id)"
-                           :title="collapsedColumns.includes(col.id) ? 'Izvērst' : 'Sakļaut'">
-                      <v-icon size="14">{{ collapsedColumns.includes(col.id) ? 'mdi-chevron-down' : 'mdi-chevron-up' }}</v-icon>
-                    </v-btn>
-                    <v-btn v-if="col.id !== 'default'" icon size="x-small" variant="text" color="error"
-                           title="Dzēst kolonnu" @click="deleteColumn(col.id)">
-                      <v-icon size="14">mdi-close</v-icon>
-                    </v-btn>
-                  </div>
-                </div>
-
-                <!-- Column body (hidden when collapsed) -->
-                <template v-if="!collapsedColumns.includes(col.id)">
-                  <div class="trello-col-body">
-                    <!-- Empty state -->
-                    <div v-if="tasksByColumn(col.id).length === 0" class="trello-empty">
-                      <v-icon size="32" color="grey-lighten-1">mdi-inbox-outline</v-icon>
-                      <p>Nav uzdevumu</p>
-                      <p class="trello-empty-hint">Velc šurp vai pievieno zemāk</p>
-                    </div>
-
-                    <!-- Task cards -->
-                    <v-card v-for="task in tasksByColumn(col.id)" :key="task.id"
-                            class="trello-task-card mb-2" elevation="1"
-                            draggable="true" @dragstart="onDragStart($event, task.id)"
-                            :style="{ borderLeftColor: priorityColor(task.priority) }">
-                      <v-card-text class="py-2 px-3">
-                        <!-- Priority + actions row -->
-                        <div class="d-flex justify-space-between align-center mb-1">
-                          <v-chip v-if="task.priority && task.priority !== 'none'"
-                                  size="x-small" variant="tonal"
-                                  :color="{ high: 'error', medium: 'warning', low: 'success' }[task.priority]">
-                            {{ { high: '↑ Augsta', medium: '→ Vidēja', low: '↓ Zema' }[task.priority] }}
-                          </v-chip>
-                          <span v-else></span>
-                          <div class="task-actions">
-                            <v-btn icon size="x-small" variant="text" title="Rediģēt"
-                                   @click.stop="openTaskDialog(task)">
-                              <v-icon size="13">mdi-pencil</v-icon>
-                            </v-btn>
-                            <v-btn icon size="x-small" variant="text" color="error" title="Dzēst"
-                                   @click.stop="deleteTask(task.id)">
-                              <v-icon size="13">mdi-delete</v-icon>
-                            </v-btn>
-                          </div>
-                        </div>
-
-                        <span class="trello-task-title">{{ task.title }}</span>
-                        <p v-if="task.description" class="trello-task-desc">{{ task.description }}</p>
-
-                        <!-- Footer chips -->
-                        <div class="d-flex gap-1 flex-wrap mt-1">
-                          <v-chip v-if="task.due_date" size="x-small" variant="tonal"
-                                  :color="isOverdue(task.due_date) ? 'error' : 'primary'"
-                                  prepend-icon="mdi-calendar">
-                            {{ task.due_date }}
-                          </v-chip>
-                          <v-chip v-if="task.status === 'completed'" size="x-small"
-                                  variant="tonal" color="success" prepend-icon="mdi-check">
-                            Pabeigts
-                          </v-chip>
-                        </div>
-                      </v-card-text>
-                    </v-card>
-                  </div>
-
-                  <!-- Quick-add row -->
-                  <div class="col-quick-add">
-                    <template v-if="quickAddCol === col.id">
-                      <v-text-field
-                        v-model="quickAddTitle"
-                        placeholder="Uzdevuma nosaukums..."
-                        variant="outlined"
-                        density="compact"
-                        autofocus
-                        hide-details
-                        @keyup.enter="quickAddTask(col.id)"
-                        @keyup.esc="quickAddCol = null"
-                        @blur="quickAddCol = null">
-                        <template #append-inner>
-                          <v-btn icon size="x-small" variant="text" color="primary"
-                                 @mousedown.prevent="quickAddTask(col.id)">
-                            <v-icon size="16">mdi-check</v-icon>
-                          </v-btn>
-                        </template>
-                      </v-text-field>
-                    </template>
-                    <v-btn v-else variant="text" size="small" prepend-icon="mdi-plus"
-                           block class="quick-add-btn"
-                           @click="quickAddCol = col.id; quickAddTitle = ''">
-                      Pievienot uzdevumu
-                    </v-btn>
-                  </div>
-                </template>
-              </div>
-
-              <!-- Add column button -->
-              <div class="trello-add-col" @click="showColumnDialog = true">
-                <v-icon size="28">mdi-plus</v-icon>
-                <span>Pievienot kolonnu</span>
-              </div>
-            </div>
-
-          </v-card-text>
-        </v-card>
-        <div class="tool-bottom-nav mt-4">
-          <v-btn variant="tonal" prepend-icon="mdi-arrow-left" @click="currentPage = 'home'">Atpakaļ</v-btn>
-          <div class="tool-links">
-            <v-btn variant="text" size="small" prepend-icon="mdi-timer" @click="currentPage = 'pomodoro'">Pomodoro</v-btn>
-            <v-btn variant="text" size="small" prepend-icon="mdi-grid" @click="currentPage = 'matrix'">Matrica</v-btn>
-            <v-btn variant="text" size="small" prepend-icon="mdi-calendar" @click="currentPage = 'calendar'">Kalendārs</v-btn>
-          </div>
-        </div>
-      </v-container>
-    </v-main>
-
-
-<!-- Eisenhower matrix -->
-
-    <v-main v-else-if="currentPage === 'matrix'" class="main-content">
-      <v-container fluid class="py-8">
-        <v-card class="matrix-section site-section">
-          <v-card-text>
-            <div class="d-flex justify-space-between align-center mb-4">
-              <h2>Eizenhauera Matrica</h2>
-              <div class="d-flex ga-2">
-                <v-btn color="primary" variant="elevated" @click="openTaskDialog()">+ Jauns uzdevums</v-btn>
-                <v-btn color="error" variant="outlined" @click="clearMatrix()">Notīrīt matricu</v-btn>
-              </div>
-            </div>
-
-            <div class="matrix-axis-row">
-              <div class="matrix-axis-label-y">↑ Steidzamība</div>
-              <div class="matrix-grid">
-                <div class="matrix-quadrant q-do"
-                     @dragover.prevent @drop="onDropToQuadrant('do')">
-                  <div class="q-label">DARI TAGAD<br><small>Steidzami + Svarīgi</small></div>
-                  <div class="q-tasks">
-                    <div v-for="task in tasksByQuadrant('do')" :key="task.id"
-                         class="q-chip" draggable="true" @dragstart="onDragStart($event, task.id)"
-                         @click="openTaskDialog(task)">
-                      {{ task.title }}<span class="chip-del" @click.stop="deleteTask(task.id)">×</span>
-                    </div>
-                  </div>
-                </div>
-                <div class="matrix-quadrant q-schedule"
-                     @dragover.prevent @drop="onDropToQuadrant('schedule')">
-                  <div class="q-label">IEPLĀNO<br><small>Ne-steidzami + Svarīgi</small></div>
-                  <div class="q-tasks">
-                    <div v-for="task in tasksByQuadrant('schedule')" :key="task.id"
-                         class="q-chip" draggable="true" @dragstart="onDragStart($event, task.id)"
-                         @click="openTaskDialog(task)">
-                      {{ task.title }}<span class="chip-del" @click.stop="deleteTask(task.id)">×</span>
-                    </div>
-                  </div>
-                </div>
-                <div class="matrix-quadrant q-delegate"
-                     @dragover.prevent @drop="onDropToQuadrant('delegate')">
-                  <div class="q-label">DELEĢĒ<br><small>Steidzami + Nesvarīgi</small></div>
-                  <div class="q-tasks">
-                    <div v-for="task in tasksByQuadrant('delegate')" :key="task.id"
-                         class="q-chip" draggable="true" @dragstart="onDragStart($event, task.id)"
-                         @click="openTaskDialog(task)">
-                      {{ task.title }}<span class="chip-del" @click.stop="deleteTask(task.id)">×</span>
-                    </div>
-                  </div>
-                </div>
-                <div class="matrix-quadrant q-eliminate"
-                     @dragover.prevent @drop="onDropToQuadrant('eliminate')">
-                  <div class="q-label">ATMET<br><small>Ne-steidzami + Nesvarīgi</small></div>
-                  <div class="q-tasks">
-                    <div v-for="task in tasksByQuadrant('eliminate')" :key="task.id"
-                         class="q-chip" draggable="true" @dragstart="onDragStart($event, task.id)"
-                         @click="openTaskDialog(task)">
-                      {{ task.title }}<span class="chip-del" @click.stop="deleteTask(task.id)">×</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="matrix-axis-label-x">→ Svarīgums</div>
-
-            <h3 class="mt-6 mb-3">Nepievienotie uzdevumi</h3>
-            <div class="task-pool" @dragover.prevent @drop="onDropToQuadrant(null)">
-              <div v-if="unassignedTasks.length === 0" class="pool-empty">Visi uzdevumi ir pievienoti matricai</div>
-              <div v-for="task in unassignedTasks" :key="task.id"
-                   class="pool-chip" draggable="true" @dragstart="onDragStart($event, task.id)"
-                   @click="openTaskDialog(task)">
-                {{ task.title }}<span class="chip-del" @click.stop="deleteTask(task.id)">×</span>
-              </div>
-            </div>
-          </v-card-text>
-        </v-card>
-        <div class="tool-bottom-nav mt-4">
-          <v-btn variant="tonal" prepend-icon="mdi-arrow-left" @click="currentPage = 'home'">Atpakaļ</v-btn>
-          <div class="tool-links">
-            <v-btn variant="text" size="small" prepend-icon="mdi-timer" @click="currentPage = 'pomodoro'">Pomodoro</v-btn>
-            <v-btn variant="text" size="small" prepend-icon="mdi-format-list-checks" @click="currentPage = 'taskboard'">Uzdevumu Dēlis</v-btn>
-            <v-btn variant="text" size="small" prepend-icon="mdi-calendar" @click="currentPage = 'calendar'">Kalendārs</v-btn>
-          </div>
-        </div>
-      </v-container>
-    </v-main>
-
-<!-- Calendar -->
-
-    <v-main v-else-if="currentPage === 'calendar'" class="main-content">
-      <v-container fluid class="py-8">
-        <v-card class="calendar-section site-section">
-          <v-card-text>
-            <div class="d-flex justify-space-between align-center mb-4">
-              <h2>Kalendārs</h2>
-              <v-btn color="primary" variant="elevated" @click="openTaskDialog()">+ Jauns uzdevums</v-btn>
-            </div>
-
-            <div class="cal-nav">
-              <v-btn icon variant="text" @click="changeMonth(-1)"><v-icon>mdi-chevron-left</v-icon></v-btn>
-              <span class="cal-month-label">{{ calendarMonthLabel }}</span>
-              <v-btn icon variant="text" @click="changeMonth(1)"><v-icon>mdi-chevron-right</v-icon></v-btn>
-            </div>
-
-            <div class="cal-grid">
-              <div class="cal-day-header" v-for="d in ['P','O','T','C','P','S','Sv']" :key="d">{{ d }}</div>
-              <div v-for="(day, i) in calendarDays" :key="i"
-                   class="cal-day-cell"
-                   :class="{ 'cal-other': !day.currentMonth, 'cal-today': day.isToday }"
-                   @dragover.prevent
-                   @drop="day.currentMonth && onDropToCalendarDay(day.dateStr)"
-                   @click="day.currentMonth && openTaskDialog(null, day.dateStr)">
-                <span class="cal-day-num">{{ day.day }}</span>
-                <div v-for="task in tasksForDay(day.dateStr)" :key="task.id"
-                     class="cal-task-block"
-                     draggable="true"
-                     @dragstart.stop="onDragStart($event, task.id)"
-                     @click.stop="openTaskDialog(task)">
-                  {{ task.title }}
-                </div>
-              </div>
-            </div>
-
-            <h3 class="mt-6 mb-3">Neieplānotie uzdevumi</h3>
-            <div class="task-pool" @dragover.prevent @drop="onDropToCalendarDay(null)">
-              <div v-if="tasksWithoutDate.length === 0" class="pool-empty">Nav neieplānotu uzdevumu</div>
-              <div v-for="task in tasksWithoutDate" :key="task.id"
-                   class="pool-chip" draggable="true" @dragstart="onDragStart($event, task.id)">
-                {{ task.title }}
-              </div>
-            </div>
-          </v-card-text>
-        </v-card>
-        <div class="tool-bottom-nav mt-4">
-          <v-btn variant="tonal" prepend-icon="mdi-arrow-left" @click="currentPage = 'home'">Atpakaļ</v-btn>
-          <div class="tool-links">
-            <v-btn variant="text" size="small" prepend-icon="mdi-timer" @click="currentPage = 'pomodoro'">Pomodoro</v-btn>
-            <v-btn variant="text" size="small" prepend-icon="mdi-format-list-checks" @click="currentPage = 'taskboard'">Uzdevumu Dēlis</v-btn>
-            <v-btn variant="text" size="small" prepend-icon="mdi-grid" @click="currentPage = 'matrix'">Matrica</v-btn>
-          </div>
-        </div>
-      </v-container>
-    </v-main>
-
+    <ForumSection v-else-if="currentPage === 'forum'"
+      :current-user="currentUser" :s="s" :dark-mode="darkMode"
+      @show-login="showLoginWindow = true" @snackbar="showSnackbar($event)"
+    />
+
+    <AboutSection v-else-if="currentPage === 'about'" :s="s" />
+
+    <ContactSection v-else-if="currentPage === 'contact'" :s="s" :current-user="currentUser" @snackbar="showSnackbar($event)" />
+
+    <PomodoroTool v-else-if="currentPage === 'pomodoro'"
+      :tasks="tasks" :current-user="currentUser" :s="s" :dark-mode="darkMode"
+      :open-task-dialog="openTaskDialog"
+      @show-login="showLoginWindow = true" @snackbar="showSnackbar($event)" @navigate="currentPage = $event"
+    />
+
+    <TaskboardTool v-else-if="currentPage === 'taskboard'"
+      :tasks="tasks" :columns="columns" :current-user="currentUser" :s="s" :dark-mode="darkMode"
+      :open-task-dialog="openTaskDialog" :delete-task="deleteTask"
+      :save-column="saveColumn" :delete-column="deleteColumn"
+      @show-login="showLoginWindow = true" @snackbar="showSnackbar($event)" @navigate="currentPage = $event"
+      @open-column-dialog="showColumnDialog = true"
+    />
+
+    <MatrixTool v-else-if="currentPage === 'matrix'"
+      :tasks="tasks" :current-user="currentUser" :s="s" :dark-mode="darkMode"
+      :open-task-dialog="openTaskDialog" :delete-task="deleteTask"
+      @show-login="showLoginWindow = true" @snackbar="showSnackbar($event)" @navigate="currentPage = $event"
+    />
+
+    <CalendarTool v-else-if="currentPage === 'calendar'"
+      :tasks="tasks" :current-user="currentUser" :s="s" :dark-mode="darkMode"
+      :open-task-dialog="openTaskDialog"
+      @show-login="showLoginWindow = true" @snackbar="showSnackbar($event)" @navigate="currentPage = $event"
+    />
+
+    <AdminSection v-else-if="currentPage === 'admin'"
+      :s="s"
+      @snackbar="showSnackbar"
+    />
 
 <!-- Footer -->
 
@@ -910,23 +283,21 @@
       <v-card>
         <v-card-title class="bg-primary text-white">
           <div class="d-flex justify-space-between align-center">
-            <span>{{ editingTask ? 'Rediģēt uzdevumu' : 'Jauns uzdevums' }}</span>
+            <span>{{ editingTask ? s.taskDialogEdit : s.taskDialogNew }}</span>
             <v-btn icon="mdi-close" variant="text" @click="showTaskDialog = false"></v-btn>
           </div>
         </v-card-title>
         <v-card-text class="pt-4">
-          <v-text-field v-model="taskForm.title" label="Nosaukums" required class="mb-3"></v-text-field>
-          <v-textarea v-model="taskForm.description" label="Apraksts" rows="2" class="mb-3"></v-textarea>
-          <v-select v-model="taskForm.status" :items="statusOptions" item-title="title" item-value="value" label="Statuss" class="mb-3"></v-select>
-          <v-select v-model="taskForm.priority" :items="priorityOptions" item-title="title" item-value="value" label="Prioritāte" class="mb-3"></v-select>
-          <v-text-field v-model="taskForm.due_date" label="Izpildes datums" type="date" class="mb-3"></v-text-field>
-          <v-text-field v-model.number="taskForm.est_pomodoros" label="Paredzamie pomodori" type="number" min="1" max="99" class="mb-3"></v-text-field>
+          <v-text-field v-model="taskForm.title" :label="s.taskTitle" required class="mb-3"></v-text-field>
+          <v-textarea v-model="taskForm.description" :label="s.taskDesc" rows="2" class="mb-3"></v-textarea>
+          <v-select v-model="taskForm.status" :items="statusOptions" item-title="title" item-value="value" :label="s.taskStatus" class="mb-3"></v-select>
+          <v-text-field v-model="taskForm.due_date" :label="s.taskDueDate" type="date" class="mb-3"></v-text-field>
         </v-card-text>
         <v-card-actions class="pa-4 pt-0">
-          <v-btn v-if="editingTask" color="error" variant="text" @click="deleteTask(editingTask.id); showTaskDialog = false">Dzēst</v-btn>
+          <v-btn v-if="editingTask" color="error" variant="text" @click="deleteTask(editingTask.id); showTaskDialog = false">{{ s.taskDelete }}</v-btn>
           <v-spacer></v-spacer>
-          <v-btn variant="text" @click="showTaskDialog = false">Atcelt</v-btn>
-          <v-btn color="primary" variant="elevated" @click="saveTask()">Saglabāt</v-btn>
+          <v-btn variant="text" @click="showTaskDialog = false">{{ s.taskCancel }}</v-btn>
+          <v-btn color="primary" variant="elevated" @click="saveTask()">{{ s.taskSave }}</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -937,15 +308,15 @@
       <v-card>
         <v-card-title class="bg-primary text-white">
           <div class="d-flex justify-space-between align-center">
-            <span>Jauna kolonna</span>
+            <span>{{ s.colDialogTitle }}</span>
             <v-btn icon="mdi-close" variant="text" @click="showColumnDialog = false"></v-btn>
           </div>
         </v-card-title>
         <v-card-text class="pt-4">
-          <v-text-field v-model="columnForm.name" label="Nosaukums" required class="mb-3"></v-text-field>
-          <v-textarea v-model="columnForm.description" label="Apraksts" rows="2" class="mb-3"></v-textarea>
-          <v-text-field :model-value="new Date().toLocaleDateString('lv-LV')" label="Izveidošanas datums" readonly disabled class="mb-3"></v-text-field>
-          <div class="mb-1 text-body-2 text-medium-emphasis">Kolonnas krāsa</div>
+          <v-text-field v-model="columnForm.name" :label="s.colName" required class="mb-3"></v-text-field>
+          <v-textarea v-model="columnForm.description" :label="s.colDesc" rows="2" class="mb-3"></v-textarea>
+          <v-text-field :model-value="s.colCreatedDate()" :label="s.colCreated" readonly disabled class="mb-3"></v-text-field>
+          <div class="mb-1 text-body-2 text-medium-emphasis">{{ s.colColor }}</div>
           <div class="col-color-picker">
             <div v-for="c in columnColors" :key="c"
                  class="col-color-swatch"
@@ -956,8 +327,8 @@
         </v-card-text>
         <v-card-actions class="pa-4 pt-0">
           <v-spacer></v-spacer>
-          <v-btn variant="text" @click="showColumnDialog = false">Atcelt</v-btn>
-          <v-btn color="primary" variant="elevated" @click="saveColumn()">Izveidot</v-btn>
+          <v-btn variant="text" @click="showColumnDialog = false">{{ s.colCancel }}</v-btn>
+          <v-btn color="primary" variant="elevated" @click="saveColumn()">{{ s.colCreate }}</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -968,7 +339,7 @@
       <v-card>
         <v-card-title class="bg-primary text-white">
           <div class="d-flex justify-space-between align-center">
-            <span>Pieslēgties</span>
+            <span>{{ s.loginTitle }}</span>
             <v-btn icon="mdi-close" variant="text" @click="showLoginWindow = false; authError = ''"></v-btn>
           </div>
         </v-card-title>
@@ -976,14 +347,14 @@
         <v-card-text class="pt-6">
           <v-alert v-if="authError" type="error" variant="tonal" class="mb-4">{{ authError }}</v-alert>
           <v-form @submit.prevent="handleLogin">
-            <v-text-field v-model="loginForm.email" label="Epasts" type="email" required class="mb-4"></v-text-field>
-            <v-text-field v-model="loginForm.password" label="Parole" type="password" required class="mb-4"></v-text-field>
-            <v-btn type="submit" color="primary" variant="elevated" block class="mb-4" :loading="authLoading">Pieslēgties</v-btn>
+            <v-text-field v-model="loginForm.email" :label="s.loginEmail" type="email" required class="mb-4"></v-text-field>
+            <v-text-field v-model="loginForm.password" :label="s.loginPass" type="password" required class="mb-4"></v-text-field>
+            <v-btn type="submit" color="primary" variant="elevated" block class="mb-4" :loading="authLoading">{{ s.loginSubmit }}</v-btn>
           </v-form>
 
           <p class="text-center">
-            Nav konta? 
-            <v-btn text color="primary" @click="showLoginWindow = false; showRegisterWindow = true">Reģistrēties</v-btn>
+            {{ s.loginNoAccount }}
+            <v-btn text color="primary" @click="showLoginWindow = false; showRegisterWindow = true">{{ s.loginRegister }}</v-btn>
           </p>
         </v-card-text>
       </v-card>
@@ -996,7 +367,7 @@
       <v-card>
         <v-card-title class="bg-primary text-white">
           <div class="d-flex justify-space-between align-center">
-            <span>Reģistrēties</span>
+            <span>{{ s.regTitle }}</span>
             <v-btn icon="mdi-close" variant="text" @click="showRegisterWindow = false; authError = ''"></v-btn>
           </div>
         </v-card-title>
@@ -1004,19 +375,73 @@
         <v-card-text class="pt-6">
           <v-alert v-if="authError" type="error" variant="tonal" class="mb-4">{{ authError }}</v-alert>
           <v-form @submit.prevent="handleRegister">
-            <v-text-field v-model="registerForm.username" label="Lietotājvārds" required class="mb-4"></v-text-field>
-            <v-text-field v-model="registerForm.name" label="Vārds" required class="mb-4"></v-text-field>
-            <v-text-field v-model="registerForm.surname" label="Uzvārds" required class="mb-4"></v-text-field>
-            <v-text-field v-model="registerForm.email" label="Epasts" type="email" required class="mb-4"></v-text-field>
-            <v-text-field v-model="registerForm.password" label="Parole" type="password" required class="mb-4"></v-text-field>
-            <v-text-field v-model="registerForm.password_confirmation" label="Apstiprināt paroli" type="password" required class="mb-4"></v-text-field>
-            <v-btn type="submit" color="primary" variant="elevated" block class="mb-4" :loading="authLoading">Reģistrēties</v-btn>
+            <v-text-field v-model="registerForm.username" :label="s.regUsername" required class="mb-4"></v-text-field>
+            <v-text-field v-model="registerForm.name" :label="s.regName" required class="mb-4"></v-text-field>
+            <v-text-field v-model="registerForm.surname" :label="s.regSurname" required class="mb-4"></v-text-field>
+            <v-text-field v-model="registerForm.email" :label="s.regEmail" type="email" required class="mb-4"></v-text-field>
+            <v-text-field v-model="registerForm.password" :label="s.regPass" type="password" required class="mb-4"></v-text-field>
+            <v-text-field v-model="registerForm.password_confirmation" :label="s.regConfirm" type="password" required class="mb-4"></v-text-field>
+            <v-btn type="submit" color="primary" variant="elevated" block class="mb-4" :loading="authLoading">{{ s.regSubmit }}</v-btn>
           </v-form>
 
           <p class="text-center">
-            Jau ir konts? 
-            <v-btn text color="primary" @click="showRegisterWindow = false; showLoginWindow = true">Pieslēgties</v-btn>
+            {{ s.regHasAccount }}
+            <v-btn text color="primary" @click="showRegisterWindow = false; showLoginWindow = true">{{ s.regLogin }}</v-btn>
           </p>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+
+<!-- Profile Dialog -->
+
+    <v-dialog v-model="showProfileDialog" max-width="460">
+      <v-card>
+        <v-card-title class="bg-primary text-white">
+          <div class="d-flex justify-space-between align-center">
+            <span>{{ s.profileTitle }}</span>
+            <v-btn icon="mdi-close" variant="text" @click="showProfileDialog = false"></v-btn>
+          </div>
+        </v-card-title>
+        <v-card-text class="pt-4" v-if="currentUser">
+          <!-- Avatar -->
+          <div class="profile-avatar-wrap mb-4 mx-auto">
+            <img v-if="currentUser.avatar_url" :src="currentUser.avatar_url" class="profile-avatar-img" :alt="currentUser.name">
+            <div v-else class="profile-avatar-placeholder">{{ currentUser.name[0] }}{{ currentUser.surname ? currentUser.surname[0] : '' }}</div>
+            <label class="profile-avatar-edit" :title="s.changeAvatar">
+              <v-icon size="18">mdi-camera</v-icon>
+              <input type="file" accept="image/*" style="display:none" @change="uploadAvatar">
+            </label>
+          </div>
+          <v-progress-linear v-if="avatarUploading" indeterminate color="primary" class="mb-3"></v-progress-linear>
+
+          <v-divider class="mb-4"></v-divider>
+
+          <!-- Profile edit form -->
+          <v-form @submit.prevent="saveProfile">
+            <v-row dense>
+              <v-col cols="6">
+                <v-text-field v-model="profileForm.name" :label="s.regName" variant="outlined" density="compact"></v-text-field>
+              </v-col>
+              <v-col cols="6">
+                <v-text-field v-model="profileForm.surname" :label="s.regSurname" variant="outlined" density="compact"></v-text-field>
+              </v-col>
+            </v-row>
+            <v-text-field v-model="profileForm.username" :label="s.regUsername" variant="outlined" density="compact" class="mb-1" prefix="@"></v-text-field>
+            <v-alert v-if="profileError" type="error" variant="tonal" density="compact" class="mb-2">{{ profileError }}</v-alert>
+            <v-btn type="submit" color="primary" variant="elevated" block :loading="profileSaving">{{ s.profileSave }}</v-btn>
+          </v-form>
+
+          <v-divider class="my-4"></v-divider>
+
+          <!-- Password change -->
+          <v-form @submit.prevent="savePassword">
+            <div class="text-body-2 font-weight-bold mb-2">{{ s.profileChangePass }}</div>
+            <v-text-field v-model="passwordForm.current_password" :label="s.profileCurrentPass" type="password" variant="outlined" density="compact" class="mb-2"></v-text-field>
+            <v-text-field v-model="passwordForm.password" :label="s.regPass" type="password" variant="outlined" density="compact" class="mb-2"></v-text-field>
+            <v-text-field v-model="passwordForm.password_confirmation" :label="s.regConfirm" type="password" variant="outlined" density="compact" class="mb-1"></v-text-field>
+            <v-alert v-if="passwordError" type="error" variant="tonal" density="compact" class="mb-2">{{ passwordError }}</v-alert>
+            <v-btn type="submit" color="secondary" variant="elevated" block :loading="passwordSaving">{{ s.profileSavePass }}</v-btn>
+          </v-form>
         </v-card-text>
       </v-card>
     </v-dialog>
@@ -1036,9 +461,19 @@
 
 <script>
   import { useTheme } from 'vuetify'
+  import { apiFetch } from '../api.js'
+  import PomodoroTool    from './PomodoroTool.vue'
+  import TaskboardTool   from './TaskboardTool.vue'
+  import MatrixTool      from './MatrixTool.vue'
+  import CalendarTool    from './CalendarTool.vue'
+  import ForumSection    from './ForumSection.vue'
+  import AboutSection    from './AboutSection.vue'
+  import ContactSection  from './ContactSection.vue'
+  import AdminSection    from './AdminSection.vue'
 
   export default {
     name: 'App',
+    components: { PomodoroTool, TaskboardTool, MatrixTool, CalendarTool, ForumSection, AboutSection, ContactSection, AdminSection },
     setup() {
       const theme = useTheme()
       return { theme }
@@ -1047,20 +482,25 @@
       return {
         currentPage: window.pageData?.currentPage || 'home',
         pageTitle: window.pageData?.title || 'Homepage',
-        clickCount: 0,
+        navDrawer: false,
+        toolsMenuOpen: false,
+        a11yMenuOpen: false,
+        language: 'lv',
         darkMode: false,
         showLoginWindow: false,
         showRegisterWindow: false,
+        showProfileDialog: false,
+        avatarUploading: false,
+        verificationResending: false,
+        profileForm: { name: '', surname: '', username: '' },
+        profileError: '',
+        profileSaving: false,
+        passwordForm: { current_password: '', password: '', password_confirmation: '' },
+        passwordError: '',
+        passwordSaving: false,
         currentUser: null,
         authError: '',
         authLoading: false,
-        contactForm: {
-          name: '',
-          email: '',
-          message: ''
-        },
-        contactLoading: false,
-        contactSent: false,
         snackbar: { show: false, text: '', color: 'error' },
         loginForm: {
           email: '',
@@ -1074,25 +514,6 @@
           password: '',
           password_confirmation: ''
         },
-        pomodoroTime: 25 * 60,
-        pomodoroDuration: 25 * 60,
-        shortBreakDuration: 5 * 60,
-        longBreakDuration: 15 * 60,
-        currentPhase: 'work',
-        isPomodoroRunning: false,
-        pomodoroTimerId: null,
-        cyclesCompleted: 0,
-        sessionNumber: 1,
-        focusedTaskId: null,
-        pomodoroAutoStart: false,
-        showPomodoroSettings: false,
-        settingsForm: { pomo: 25, short: 5, long: 15 },
-        pomodoroMode: 'cycle',
-        rightPanelTab: 'tasks',
-        sessionQueue: [],
-        currentQueueIndex: 0,
-        showQueueDialog: false,
-        queueForm: { type: 'work', minutes: 25, taskId: null },
         tasks: JSON.parse(localStorage.getItem('tf_tasks') || '[]'),
         showTaskDialog: false,
         editingTask: null,
@@ -1101,86 +522,259 @@
           { id: 'default', name: 'Iesūtne', description: 'Noklusējuma kolonna', createdAt: new Date().toISOString() }
         ],
         showColumnDialog: false,
-        columnForm: { name: '', description: '', color: '#764ba2' },
-        collapsedColumns: [],
-        dragOverColumn: null,
-        boardFilter: '',
-        quickAddCol: null,
-        quickAddTitle: '',
-        columnColors: ['#764ba2','#667eea','#ef5350','#66bb6a','#ffa726','#26c6da','#ec407a','#78909c'],
-        statusOptions: [
-          { title: 'Gaida',    value: 'pending' },
-          { title: 'Procesā',  value: 'in_progress' },
-          { title: 'Pabeigts', value: 'completed' }
-        ],
-        priorityOptions: [
-          { title: '↑ Augsta', value: 'high' },
-          { title: '→ Vidēja', value: 'medium' },
-          { title: '↓ Zema',   value: 'low' },
-          { title: '— Nav',    value: 'none' }
-        ],
-        draggedTaskId: null,
-        calendarYear: new Date().getFullYear(),
-        calendarMonth: new Date().getMonth(),
-
-        // Forum
-        forumView: 'categories',
-        forumCategory: null,
-        forumCategories: [],
-        forumPosts: [],
-        forumPostData: null,
-        forumNewPost: { title: '', body: '' },
-        forumNewComment: '',
-        forumLoading: false,
-        showNewPostDialog: false,
+        columnForm: { name: '', description: '', color: '#8B6E43' },
+        columnColors: ['#8B6E43','#5a8a6e','#ef5350','#66bb6a','#ffa726','#26c6da','#ec407a','#78909c'],
       }
     },
 
     computed: {
-      focusedTask() {
-        if (!this.focusedTaskId) return null
-        return this.tasks.find(t => t.id === this.focusedTaskId) || null
+      s() {
+        const lv = {
+          navTools:'Rīki', navForum:'Forums', navAbout:'Par Mums', navContact:'Kontakti',
+          navA11y:'Pieejamība', navLogin:'Pieslēgties', navLogout:'Iziet',
+          darkTheme:'Tumšā tema', lightTheme:'Gaišā tema',
+          switchToEn:'Switch to English', switchToLv:'Pārslēgties uz latviešu',
+          toolPomodoro:'Pomodoro', toolMatrix:'Eizenhauera Matrica',
+          toolCalendar:'Kalendārs', toolTaskboard:'Uzdevumu Pārvaldnieks',
+          homeTitle:'Galvenā lapa',
+          card1Title:'Pomodoro Pulkstenis', card1Desc:'Strādājiet un atpūtieites pēc noteikta laika grafika.',
+          card2Title:'Mērķu Plānotājs',     card2Desc:'Organizējiet savus mērķus ilgtermiņā.',
+          card3Title:'Eizenhauera Matrica', card3Desc:'Nosakidrojiet kādus mērķus sasniegt pirms citiem.',
+          card4Title:'Uzdevumu Kalendārs',  card4Desc:'Lieciet atgādinājumus notikumiem vai termiņiem.',
+          forumTitle:'Forums', forumSubtitle:'Izvēlies kategoriju, lai sāktu vai lasītu diskusijas',
+          forumAllForums:'Visi forumi', forumNewPost:'Jauns ieraksts',
+          forumSignInToWrite:'Piesakies, lai rakstītu', forumSignInToComment:'Piesakies, lai komentētu',
+          forumNoPosts:'Nav ierakstu šajā kategorijā. Esi pirmais!',
+          forumComments:'Komentāri', forumNoComments:'Nav komentāru. Esi pirmais!',
+          forumPublish:'Publicēt', forumCancel:'Atcelt',
+          forumCommentAs:'Komentē kā', forumCommentPlaceholder:'Raksti komentāru...',
+          forumNewPostLabel:'Jauns ieraksts —', forumPostTitle:'Virsraksts', forumPostBody:'Saturs',
+          forumBackTo:'Atpakaļ uz',
+          forumSearch:'Meklēt ierakstus...', forumSortLatest:'Jaunākie', forumSortOldest:'Vecākie', forumSortPopular:'Populārākie',
+          forumFavorites:'Izlase', forumFavorite:'Pievienot izlasei', forumUnfavorite:'Noņemt no izlases',
+          forumNoFavorites:'Nav izlases ierakstu šajā kategorijā.', forumEditPost:'Rediģēt ierakstu',
+          aboutTitle:'Par Mums', aboutAuthor:'Par autoru', aboutProject:'Par projektu',
+          contactTitle:'Kontakti', contactAuthorLabel:'Sazinies ar autoru!',
+          contactEmail:'Epasts', contactPhone:'Tālrunis', contactSendMsg:'Nosūti ziņojumu!',
+          contactSentMsg:'Paldies! Jūsu ziņojums ir nosūtīts.',
+          contactName:'Jūsu vārds un uzvārds', contactEmailField:'Jūsu epasts',
+          contactMessage:'Jūsu ziņojums', contactSend:'Sūtīt',
+          pomoCycle:'Ciklu', pomoSession:'Sesija',
+          pomoWork:'Pomodoro', pomoShortBreak:'Īsā pauze', pomoLongBreak:'Garā pauze',
+          pomoStart:'START', pomoPause:'PAUZE', pomoSkip:'Izlaist', pomoReset:'Atiestatīt',
+          pomoCycles:'cikli', pomoAutoStart:'Auto-start',
+          pomoTasks:'Uzdevumi', pomoQueue:'Sesijas plāns',
+          pomoAdd:'Pievienot', pomoAddBlock:'Pievienot bloku',
+          pomoNoTasks:'Nav uzdevumu. Pievieno pirmo!',
+          pomoNoBlocks:'Nav bloku. Pievieno darba vai pauzes blokus!',
+          pomoTotal:'Kopā:', pomoSessionDone:'✓ Sesija pabeigta!', pomoAddBlocksHint:'Pievieno blokus →',
+          pomoSettingsTitle:'Laika iestatījumi', pomoPomoMin:'Pomodoro (min)',
+          pomoShortMin:'Īsā pauze (min)', pomoLongMin:'Garā pauze (min)',
+          pomoSave:'Saglabāt', pomoCancel:'Atcelt',
+          pomoAddBlockTitle:'Pievienot bloku', pomoBlockType:'Bloka tips',
+          pomoBlockWork:'🍅 Darbs', pomoBlockBreak:'☕ Pauze', pomoBlockLong:'🛋 Garā pauze',
+          pomoBlockDur:'Ilgums (min)', pomoBlockTask:'Saistīt ar uzdevumu (neobligāti)',
+          taskboardTitle:'Uzdevumu Dēlis', taskboardSearch:'Meklēt...',
+          taskboardNewTask:'Jauns uzdevums', taskboardNewCol:'Pievienot kolonnu',
+          taskboardNoTasks:'Nav uzdevumu', taskboardDragHint:'Velc šurp vai pievieno zemāk',
+          taskboardAddTask:'Pievienot uzdevumu',
+          taskboardExpand:'Izvērst', taskboardCollapse:'Sakļaut', taskboardDeleteCol:'Dzēst kolonnu', taskboardEditCol:'Rediģēt kolonnu', taskboardEditColTitle:'Rediģēt kolonnu',
+          taskboardPriHigh:'↑ Augsta', taskboardPriMed:'→ Vidēja', taskboardPriLow:'↓ Zema',
+          taskboardDone:'Pabeigts', taskboardEdit:'Rediģēt', taskboardDelete:'Dzēst',
+          taskboardTasks:'uzdevumi',
+          matrixTitle:'Eizenhauera Matrica', matrixClear:'Notīrīt matricu',
+          matrixDoNow:'DARI TAGAD', matrixDoSub:'Steidzami + Svarīgi',
+          matrixSchedule:'IEPLĀNO', matrixScheduleSub:'Ne-steidzami + Svarīgi',
+          matrixDelegate:'DELEĢĒ', matrixDelegateSub:'Steidzami + Nesvarīgi',
+          matrixEliminate:'ATMET', matrixEliminateSub:'Ne-steidzami + Nesvarīgi',
+          matrixUrgency:'↑ Steidzamība', matrixImportance:'→ Svarīgums',
+          matrixUnassigned:'Nepievienotie uzdevumi', matrixAllAssigned:'Visi uzdevumi ir pievienoti matricai',
+          calTitle:'Kalendārs', calUnscheduled:'Neieplānotie uzdevumi',
+          calNoUnscheduled:'Nav neieplānotu uzdevumu',
+          calDays:['P','O','T','C','P','S','Sv'],
+          taskDialogEdit:'Rediģēt uzdevumu', taskDialogNew:'Jauns uzdevums',
+          taskTitle:'Nosaukums', taskDesc:'Apraksts', taskStatus:'Statuss', taskPriority:'Prioritāte',
+          taskDueDate:'Izpildes datums', taskPomodoros:'Paredzamie pomodori',
+          taskDelete:'Dzēst', taskCancel:'Atcelt', taskSave:'Saglabāt',
+          colDialogTitle:'Jauna kolonna', colName:'Nosaukums', colDesc:'Apraksts',
+          colCreated:'Izveidošanas datums', colColor:'Kolonnas krāsa',
+          colCancel:'Atcelt', colCreate:'Izveidot',
+          statusPending:'Gaida', statusInProgress:'Procesā', statusDone:'Pabeigts',
+          priNone:'— Nav',
+          loginTitle:'Pieslēgties', loginEmail:'Epasts', loginPass:'Parole',
+          loginSubmit:'Pieslēgties', loginNoAccount:'Nav konta?', loginRegister:'Reģistrēties',
+          regTitle:'Reģistrēties', regUsername:'Lietotājvārds', regName:'Vārds',
+          regSurname:'Uzvārds', regEmail:'Epasts', regPass:'Parole',
+          regConfirm:'Apstiprināt paroli', regSubmit:'Reģistrēties',
+          regHasAccount:'Jau ir konts?', regLogin:'Pieslēgties',
+          back:'Atpakaļ', newTask:'+ Jauns uzdevums',
+          colCreatedDate: (d) => new Date(d || Date.now()).toLocaleDateString('lv-LV'),
+          skipToContent:'Pāriet uz saturu',
+          calPrevMonth:'Iepriekšējais mēnesis', calNextMonth:'Nākamais mēnesis', calPrevYear:'Iepriekšējais gads', calNextYear:'Nākamais gads', calToday:'Šodien',
+          pomoFocusTask:'Fokusēt uzdevumu', pomoUnfocusTask:'Noņemt fokusu',
+          pomoCompleteTask:'Atzīmēt kā pabeigtu',
+          pomoMoveUp:'Pārvietot augšup', pomoMoveDown:'Pārvietot lejup',
+          pomoRemoveBlock:'Noņemt bloku',
+          quickAddConfirm:'Pievienot uzdevumu',
+          addColumnBtn:'Pievienot jaunu kolonnu',
+          uploadAvatar: 'Augšupielādēt foto',
+          changeAvatar: 'Mainīt foto',
+          avatarSaved: 'Foto saglabāts',
+          emailUnverified: 'Lūdzu verificē savu e-pastu pirms rakstīšanas forumā.',
+          resendVerification: 'Atsūtīt verificēšanas e-pastu',
+          verificationSent: 'Verificēšanas e-pasts nosūtīts!',
+          myProfile: 'Mans profils',
+          profileTitle: 'Profila iestatījumi',
+          profileSave: 'Saglabāt profilu', profileSaved: 'Profils saglabāts!',
+          profileChangePass: 'Mainīt paroli', profileCurrentPass: 'Pašreizējā parole',
+          profileSavePass: 'Mainīt paroli', profilePassSaved: 'Parole mainīta!',
+          navAdmin: 'Administrācija',
+          adminTitle: 'Administrācijas panelis',
+          adminSubtitle: 'Pārvaldīt lietotājus, ierakstus un komentārus',
+          adminUsers: 'Lietotāji',
+          adminPosts: 'Ieraksti',
+          adminComments: 'Komentāri',
+          adminSearch: 'Meklēt...',
+          adminBan: 'Bloķēt',
+          adminUnban: 'Atbloķēt',
+          adminBanned: 'Bloķēts',
+          adminDelete: 'Dzēst',
+          adminNoResults: 'Nav rezultātu.',
+          adminInPost: 'Ierakstā',
+          adminCategories: 'Kategorijas', adminAddCategory: 'Pievienot kategoriju', adminEditCategory: 'Rediģēt kategoriju', adminEdit: 'Rediģēt',
+        }
+        const en = {
+          navTools:'Tools', navForum:'Forum', navAbout:'About Us', navContact:'Contact',
+          navA11y:'Accessibility', navLogin:'Log In', navLogout:'Log Out',
+          darkTheme:'Dark mode', lightTheme:'Light mode',
+          switchToEn:'Switch to English', switchToLv:'Switch to Latvian',
+          toolPomodoro:'Pomodoro', toolMatrix:'Eisenhower Matrix',
+          toolCalendar:'Calendar', toolTaskboard:'Task Manager',
+          homeTitle:'Home',
+          card1Title:'Pomodoro Timer',      card1Desc:'Work and rest on a structured time schedule.',
+          card2Title:'Goal Planner',        card2Desc:'Organise your long-term goals.',
+          card3Title:'Eisenhower Matrix',   card3Desc:'Prioritise which goals to tackle first.',
+          card4Title:'Task Calendar',       card4Desc:'Set reminders for events or deadlines.',
+          forumTitle:'Forum', forumSubtitle:'Choose a category to start or read discussions',
+          forumAllForums:'All forums', forumNewPost:'New post',
+          forumSignInToWrite:'Sign in to write', forumSignInToComment:'Sign in to comment',
+          forumNoPosts:'No posts in this category. Be the first!',
+          forumComments:'Comments', forumNoComments:'No comments yet. Be the first!',
+          forumPublish:'Publish', forumCancel:'Cancel',
+          forumCommentAs:'Comment as', forumCommentPlaceholder:'Write a comment...',
+          forumNewPostLabel:'New post —', forumPostTitle:'Title', forumPostBody:'Content',
+          forumBackTo:'Back to',
+          forumSearch:'Search posts...', forumSortLatest:'Latest', forumSortOldest:'Oldest', forumSortPopular:'Popular',
+          forumFavorites:'Favorites', forumFavorite:'Add to favorites', forumUnfavorite:'Remove from favorites',
+          forumNoFavorites:'No favorited posts in this category.', forumEditPost:'Edit post',
+          aboutTitle:'About Us', aboutAuthor:'About the author', aboutProject:'About the project',
+          contactTitle:'Contact', contactAuthorLabel:'Get in touch!',
+          contactEmail:'Email', contactPhone:'Phone', contactSendMsg:'Send a message!',
+          contactSentMsg:'Thank you! Your message has been sent.',
+          contactName:'Your full name', contactEmailField:'Your email',
+          contactMessage:'Your message', contactSend:'Send',
+          pomoCycle:'Cycle', pomoSession:'Session',
+          pomoWork:'Pomodoro', pomoShortBreak:'Short break', pomoLongBreak:'Long break',
+          pomoStart:'START', pomoPause:'PAUSE', pomoSkip:'Skip', pomoReset:'Reset',
+          pomoCycles:'cycles', pomoAutoStart:'Auto-start',
+          pomoTasks:'Tasks', pomoQueue:'Session plan',
+          pomoAdd:'Add', pomoAddBlock:'Add block',
+          pomoNoTasks:'No tasks. Add your first!',
+          pomoNoBlocks:'No blocks. Add work or break blocks!',
+          pomoTotal:'Total:', pomoSessionDone:'✓ Session complete!', pomoAddBlocksHint:'Add blocks →',
+          pomoSettingsTitle:'Timer settings', pomoPomoMin:'Pomodoro (min)',
+          pomoShortMin:'Short break (min)', pomoLongMin:'Long break (min)',
+          pomoSave:'Save', pomoCancel:'Cancel',
+          pomoAddBlockTitle:'Add block', pomoBlockType:'Block type',
+          pomoBlockWork:'🍅 Work', pomoBlockBreak:'☕ Break', pomoBlockLong:'🛋 Long break',
+          pomoBlockDur:'Duration (min)', pomoBlockTask:'Link to task (optional)',
+          taskboardTitle:'Task Board', taskboardSearch:'Search...',
+          taskboardNewTask:'New task', taskboardNewCol:'Add column',
+          taskboardNoTasks:'No tasks', taskboardDragHint:'Drag here or add below',
+          taskboardAddTask:'Add task',
+          taskboardExpand:'Expand', taskboardCollapse:'Collapse', taskboardDeleteCol:'Delete column', taskboardEditCol:'Edit column', taskboardEditColTitle:'Edit column',
+          taskboardPriHigh:'↑ High', taskboardPriMed:'→ Medium', taskboardPriLow:'↓ Low',
+          taskboardDone:'Done', taskboardEdit:'Edit', taskboardDelete:'Delete',
+          taskboardTasks:'tasks',
+          matrixTitle:'Eisenhower Matrix', matrixClear:'Clear matrix',
+          matrixDoNow:'DO NOW',    matrixDoSub:'Urgent + Important',
+          matrixSchedule:'SCHEDULE', matrixScheduleSub:'Not urgent + Important',
+          matrixDelegate:'DELEGATE', matrixDelegateSub:'Urgent + Not important',
+          matrixEliminate:'ELIMINATE', matrixEliminateSub:'Not urgent + Not important',
+          matrixUrgency:'↑ Urgency', matrixImportance:'→ Importance',
+          matrixUnassigned:'Unassigned tasks', matrixAllAssigned:'All tasks are assigned to the matrix',
+          calTitle:'Calendar', calUnscheduled:'Unscheduled tasks',
+          calNoUnscheduled:'No unscheduled tasks',
+          calDays:['Mo','Tu','We','Th','Fr','Sa','Su'],
+          taskDialogEdit:'Edit task', taskDialogNew:'New task',
+          taskTitle:'Title', taskDesc:'Description', taskStatus:'Status', taskPriority:'Priority',
+          taskDueDate:'Due date', taskPomodoros:'Estimated pomodoros',
+          taskDelete:'Delete', taskCancel:'Cancel', taskSave:'Save',
+          colDialogTitle:'New column', colName:'Name', colDesc:'Description',
+          colCreated:'Created date', colColor:'Column colour',
+          colCancel:'Cancel', colCreate:'Create',
+          statusPending:'Pending', statusInProgress:'In progress', statusDone:'Done',
+          priNone:'— None',
+          loginTitle:'Log In', loginEmail:'Email', loginPass:'Password',
+          loginSubmit:'Log In', loginNoAccount:"Don't have an account?", loginRegister:'Register',
+          regTitle:'Register', regUsername:'Username', regName:'First name',
+          regSurname:'Last name', regEmail:'Email', regPass:'Password',
+          regConfirm:'Confirm password', regSubmit:'Register',
+          regHasAccount:'Already have an account?', regLogin:'Log In',
+          back:'Back', newTask:'+ New task',
+          colCreatedDate: (d) => new Date(d || Date.now()).toLocaleDateString('en-US'),
+          skipToContent:'Skip to content',
+          calPrevMonth:'Previous month', calNextMonth:'Next month', calPrevYear:'Previous year', calNextYear:'Next year', calToday:'Today',
+          pomoFocusTask:'Focus task', pomoUnfocusTask:'Remove focus',
+          pomoCompleteTask:'Mark as complete',
+          pomoMoveUp:'Move up', pomoMoveDown:'Move down',
+          pomoRemoveBlock:'Remove block',
+          quickAddConfirm:'Add task',
+          addColumnBtn:'Add new column',
+          uploadAvatar: 'Upload photo',
+          changeAvatar: 'Change photo',
+          avatarSaved: 'Photo saved',
+          emailUnverified: 'Please verify your email before posting in the forum.',
+          resendVerification: 'Resend verification email',
+          verificationSent: 'Verification email sent!',
+          myProfile: 'My profile',
+          profileTitle: 'Profile settings',
+          profileSave: 'Save profile', profileSaved: 'Profile saved!',
+          profileChangePass: 'Change password', profileCurrentPass: 'Current password',
+          profileSavePass: 'Change password', profilePassSaved: 'Password changed!',
+          navAdmin: 'Admin',
+          adminTitle: 'Admin Panel',
+          adminSubtitle: 'Manage users, posts and comments',
+          adminUsers: 'Users',
+          adminPosts: 'Posts',
+          adminComments: 'Comments',
+          adminSearch: 'Search...',
+          adminBan: 'Ban',
+          adminUnban: 'Unban',
+          adminBanned: 'Banned',
+          adminDelete: 'Delete',
+          adminNoResults: 'No results.',
+          adminInPost: 'In post',
+          adminCategories: 'Categories', adminAddCategory: 'Add category', adminEditCategory: 'Edit category', adminEdit: 'Edit',
+        }
+        return this.language === 'en' ? en : lv
       },
-      currentQueueBlock() {
-        return this.sessionQueue[this.currentQueueIndex] || null
-      },
-      sessionQueueTotal() {
-        return this.sessionQueue.reduce((sum, b) => sum + (b.minutes || 0), 0)
-      },
-      unassignedTasks() {
-        return this.tasks.filter(t => !t.quadrant)
-      },
-      tasksWithoutDate() {
-        return this.tasks.filter(t => !t.due_date)
-      },
-      calendarMonthLabel() {
-        return new Date(this.calendarYear, this.calendarMonth, 1)
-          .toLocaleDateString('lv-LV', { month: 'long', year: 'numeric' })
-      },
-      calendarDays() {
-        const year = this.calendarYear
-        const month = this.calendarMonth
-        const firstDay = new Date(year, month, 1)
-        const daysInMonth = new Date(year, month + 1, 0).getDate()
-        const today = new Date()
-        const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`
-        const startDow = (firstDay.getDay() + 6) % 7
-        const days = []
 
-        for (let i = startDow - 1; i >= 0; i--) {
-          const d = new Date(year, month, -i)
-          days.push({ day: d.getDate(), dateStr: null, currentMonth: false, isToday: false })
-        }
-        for (let d = 1; d <= daysInMonth; d++) {
-          const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`
-          days.push({ day: d, dateStr, currentMonth: true, isToday: dateStr === todayStr })
-        }
-        let next = 1
-        while (days.length < 42) {
-          days.push({ day: next++, dateStr: null, currentMonth: false, isToday: false })
-        }
-        return days
-      }
+      statusOptions() {
+        return [
+          { title: this.s.statusPending,    value: 'pending' },
+          { title: this.s.statusInProgress, value: 'in_progress' },
+          { title: this.s.statusDone,       value: 'completed' },
+        ]
+      },
+      priorityOptions() {
+        return [
+          { title: this.s.taskboardPriHigh, value: 'high' },
+          { title: this.s.taskboardPriMed,  value: 'medium' },
+          { title: this.s.taskboardPriLow,  value: 'low' },
+          { title: this.s.priNone,          value: 'none' },
+        ]
+      },
     },
 
     watch: {
@@ -1196,238 +790,33 @@
           localStorage.setItem('tf_columns', JSON.stringify(val))
         }
       },
-      currentPage(val) {
-        if (val === 'calendar') {
-          this.calendarYear = new Date().getFullYear()
-          this.calendarMonth = new Date().getMonth()
+      language(val) {
+        document.documentElement.lang = val === ' en' ? 'en' : 'lv'
+      },
+      showProfileDialog(open) {
+        if (open && this.currentUser) {
+          this.profileForm = { name: this.currentUser.name, surname: this.currentUser.surname, username: this.currentUser.username }
+          this.profileError = ''
+          this.passwordForm = { current_password: '', password: '', password_confirmation: '' }
+          this.passwordError = ''
         }
-        if (val === 'forum') {
-          this.forumView = 'categories'
-          this.loadForumCategories()
-        }
-      }
+      },
     },
 
     methods: {
+      toggleLanguage() {
+        this.language = this.language === 'lv' ? 'en' : 'lv'
+        localStorage.setItem('language', this.language)
+      },
+
       toggleTheme() {
         this.darkMode = !this.darkMode
         this.theme.global.name.value = this.darkMode ? 'dark' : 'light'
-        const appElement = document.getElementById('simple-app')
-        if (this.darkMode) {
-          appElement?.classList.add('dark-theme')
-        } else {
-          appElement?.classList.remove('dark-theme')
-        }
         localStorage.setItem('darkMode', this.darkMode)
-      },
-
-      formatTime(seconds) {
-        const mins = Math.floor(seconds / 60)
-        const secs = seconds % 60
-        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
-      },
-
-      startPomodoro() {
-        if (this.isPomodoroRunning) return
-
-        if (this.pomodoroMode === 'queue') {
-          if (!this.currentQueueBlock) return
-          this.pomodoroTime  = this.currentQueueBlock.minutes * 60
-          this.currentPhase  = this.currentQueueBlock.type
-          if (this.currentQueueBlock.taskId) this.focusedTaskId = this.currentQueueBlock.taskId
-        }
-
-        this.isPomodoroRunning = true
-        this.pomodoroTimerId = setInterval(() => {
-          if (this.pomodoroTime > 0) { this.pomodoroTime -= 1; return }
-
-          clearInterval(this.pomodoroTimerId)
-          this.pomodoroTimerId = null
-          this.isPomodoroRunning = false
-
-          if (this.pomodoroMode === 'queue') {
-            if (this.currentPhase === 'work') this.creditFocusedTask()
-            this.currentQueueIndex++
-            if (this.currentQueueBlock) {
-              this.pomodoroTime = this.currentQueueBlock.minutes * 60
-              this.currentPhase = this.currentQueueBlock.type
-              if (this.currentQueueBlock.taskId) this.focusedTaskId = this.currentQueueBlock.taskId
-              this.notify(this.currentPhase === 'work' ? 'Darba bloks sākas!' : 'Pauze sākas!')
-              if (this.pomodoroAutoStart) this.startPomodoro()
-            } else {
-              this.notify('Sesija pabeigta!')
-            }
-          } else {
-            if (this.currentPhase === 'work') {
-              this.cyclesCompleted += 1
-              this.sessionNumber   += 1
-              this.creditFocusedTask()
-              const next = this.cyclesCompleted % 4 === 0 ? 'longBreak' : 'break'
-              this.currentPhase  = next
-              this.pomodoroTime  = next === 'longBreak' ? this.longBreakDuration : this.shortBreakDuration
-              this.notify(next === 'longBreak' ? 'Garā pauze sākas!' : 'Īsā pauze sākas!')
-            } else {
-              this.currentPhase = 'work'
-              this.pomodoroTime = this.pomodoroDuration
-              this.notify('Darba sesija sākas!')
-            }
-            if (this.pomodoroAutoStart) this.startPomodoro()
-          }
-        }, 1000)
-      },
-
-      pausePomodoro() {
-        if (this.pomodoroTimerId) { clearInterval(this.pomodoroTimerId); this.pomodoroTimerId = null }
-        this.isPomodoroRunning = false
-      },
-
-      resetPomodoro() {
-        if (this.pomodoroTimerId) { clearInterval(this.pomodoroTimerId); this.pomodoroTimerId = null }
-        this.isPomodoroRunning = false
-        if (this.pomodoroMode === 'queue') {
-          this.currentQueueIndex = 0
-          if (this.currentQueueBlock) {
-            this.currentPhase = this.currentQueueBlock.type
-            this.pomodoroTime = this.currentQueueBlock.minutes * 60
-          }
-        } else {
-          this.currentPhase    = 'work'
-          this.cyclesCompleted = 0
-          this.sessionNumber   = 1
-          this.pomodoroTime    = this.pomodoroDuration
-        }
-      },
-
-      switchPhase(phase) {
-        this.pausePomodoro()
-        this.currentPhase = phase
-        if (phase === 'work')       this.pomodoroTime = this.pomodoroDuration
-        else if (phase === 'break') this.pomodoroTime = this.shortBreakDuration
-        else                        this.pomodoroTime = this.longBreakDuration
-      },
-
-      skipPhase() {
-        this.pausePomodoro()
-        if (this.pomodoroMode === 'queue') {
-          this.currentQueueIndex++
-          if (this.currentQueueBlock) {
-            this.currentPhase = this.currentQueueBlock.type
-            this.pomodoroTime = this.currentQueueBlock.minutes * 60
-            if (this.currentQueueBlock.taskId) this.focusedTaskId = this.currentQueueBlock.taskId
-          }
-        } else {
-          if (this.currentPhase === 'work') {
-            this.cyclesCompleted += 1
-            this.switchPhase(this.cyclesCompleted % 4 === 0 ? 'longBreak' : 'break')
-          } else {
-            this.switchPhase('work')
-          }
-        }
-      },
-
-      setMode(mode) {
-        this.pausePomodoro()
-        this.pomodoroMode = mode
-        if (mode === 'queue') {
-          this.currentQueueIndex = 0
-          if (this.currentQueueBlock) {
-            this.currentPhase = this.currentQueueBlock.type
-            this.pomodoroTime = this.currentQueueBlock.minutes * 60
-          }
-        } else {
-          this.currentPhase = 'work'
-          this.pomodoroTime = this.pomodoroDuration
-        }
-      },
-
-      creditFocusedTask() {
-        if (this.focusedTaskId === null) return
-        const idx = this.tasks.findIndex(t => t.id === this.focusedTaskId)
-        if (idx !== -1) {
-          const updated = { ...this.tasks[idx], done_pomodoros: (this.tasks[idx].done_pomodoros || 0) + 1 }
-          this.tasks.splice(idx, 1, updated)
-          if (this.currentUser) this.apiFetch(`/api/tasks/${this.focusedTaskId}`, { method: 'PUT', body: JSON.stringify({ done_pomodoros: updated.done_pomodoros }) })
-        }
-      },
-
-      addQueueBlock() {
-        if (!this.queueForm.minutes || this.queueForm.minutes < 1) return
-        const labels = { work: 'Darbs', break: 'Īsā pauze', longBreak: 'Garā pauze' }
-        const linkedTask = this.queueForm.taskId ? this.tasks.find(t => t.id === this.queueForm.taskId) : null
-        this.sessionQueue.push({
-          id:      Date.now(),
-          type:    this.queueForm.type,
-          minutes: this.queueForm.minutes,
-          taskId:  this.queueForm.taskId || null,
-          label:   linkedTask ? linkedTask.title : labels[this.queueForm.type],
-        })
-        if (this.pomodoroMode === 'queue' && this.sessionQueue.length === 1) {
-          this.currentQueueIndex = 0
-          this.currentPhase  = this.queueForm.type
-          this.pomodoroTime  = this.queueForm.minutes * 60
-        }
-        this.queueForm    = { type: 'work', minutes: 25, taskId: null }
-        this.showQueueDialog = false
-      },
-
-      removeQueueBlock(idx) {
-        this.sessionQueue.splice(idx, 1)
-        if (this.currentQueueIndex >= this.sessionQueue.length) {
-          this.currentQueueIndex = Math.max(0, this.sessionQueue.length - 1)
-        }
-      },
-
-      moveQueueBlock(idx, dir) {
-        const to = idx + dir
-        if (to < 0 || to >= this.sessionQueue.length) return
-        const item = this.sessionQueue.splice(idx, 1)[0]
-        this.sessionQueue.splice(to, 0, item)
-      },
-
-      applyPomodoroSettings() {
-        this.pomodoroDuration    = this.settingsForm.pomo  * 60
-        this.shortBreakDuration  = this.settingsForm.short * 60
-        this.longBreakDuration   = this.settingsForm.long  * 60
-        if (!this.isPomodoroRunning) this.switchPhase(this.currentPhase)
-        this.showPomodoroSettings = false
-      },
-
-      async toggleTaskDone(task) {
-        const newStatus = task.status === 'completed' ? 'pending' : 'completed'
-        const idx = this.tasks.findIndex(t => t.id === task.id)
-        if (idx !== -1) {
-          this.tasks.splice(idx, 1, { ...this.tasks[idx], status: newStatus })
-          if (this.currentUser) this.apiFetch(`/api/tasks/${task.id}`, { method: 'PUT', body: JSON.stringify({ status: newStatus }) })
-        }
-      },
-
-      notify(message) {
-        if (window.Notification && Notification.permission === 'granted') {
-          new Notification(message)
-        } else {
-          console.log(message)
-        }
       },
 
       showSnackbar(text, color = 'error') {
         this.snackbar = { show: true, text, color }
-      },
-
-      async submitContact() {
-        this.contactLoading = true
-        try {
-          const res = await this.apiFetch('/api/contact', {
-            method: 'POST',
-            body: JSON.stringify(this.contactForm),
-          })
-          if (!res.ok) throw new Error()
-          this.contactSent = true
-          this.contactForm = { name: '', email: '', message: '' }
-        } catch {
-          this.showSnackbar('Ziņojumu neizdevās nosūtīt. Mēģiniet vēlreiz.')
-        } finally {
-          this.contactLoading = false
-        }
       },
 
       async handleLogin() {
@@ -1481,105 +870,6 @@
         }
       },
 
-      tasksByColumn(columnId) {
-        return this.tasks.filter(t => {
-          if ((t.columnId || 'default') !== columnId) return false
-          if (this.boardFilter) {
-            const q = this.boardFilter.toLowerCase()
-            return t.title.toLowerCase().includes(q) ||
-                   (t.description || '').toLowerCase().includes(q)
-          }
-          return true
-        })
-      },
-      async quickAddTask(columnId) {
-        if (!this.quickAddTitle.trim()) { this.quickAddCol = null; return }
-        const newTask = {
-          title: this.quickAddTitle.trim(), description: '',
-          status: 'pending', priority: 'medium',
-          due_date: null, quadrant: null, columnId,
-        }
-        if (this.currentUser) {
-          const res = await this.apiFetch('/api/tasks', {
-            method: 'POST',
-            body: JSON.stringify({ ...newTask, column_id: columnId }),
-          })
-          const created = await res.json()
-          this.tasks.push({ ...newTask, id: created.id })
-        } else {
-          this.tasks.push({ ...newTask, id: Date.now() })
-        }
-        this.quickAddTitle = ''
-        this.quickAddCol = null
-      },
-      toggleCollapse(colId) {
-        const i = this.collapsedColumns.indexOf(colId)
-        if (i === -1) this.collapsedColumns.push(colId)
-        else this.collapsedColumns.splice(i, 1)
-      },
-      priorityColor(p) {
-        return { high: '#ef5350', medium: '#ffa726', low: '#66bb6a' }[p] || '#764ba2'
-      },
-      isOverdue(dateStr) {
-        if (!dateStr) return false
-        return new Date(dateStr) < new Date(new Date().toDateString())
-      },
-      onDropToColumn(columnId) {
-        if (this.draggedTaskId === null) return
-        const idx = this.tasks.findIndex(t => t.id === this.draggedTaskId)
-        if (idx !== -1) {
-          this.tasks.splice(idx, 1, { ...this.tasks[idx], columnId })
-          if (this.currentUser) this.apiFetch(`/api/tasks/${this.draggedTaskId}`, { method: 'PUT', body: JSON.stringify({ column_id: columnId }) })
-        }
-        this.draggedTaskId = null
-      },
-      async saveColumn() {
-        if (!this.columnForm.name.trim()) return
-        if (this.currentUser) {
-          const res = await this.apiFetch('/api/columns', {
-            method: 'POST',
-            body: JSON.stringify(this.columnForm),
-          })
-          const created = await res.json()
-          this.columns.push({
-            id: created.id, name: created.name,
-            description: created.description || '',
-            color: created.color || '#764ba2',
-            createdAt: created.created_at,
-          })
-        } else {
-          this.columns.push({
-            id: Date.now(), name: this.columnForm.name,
-            description: this.columnForm.description,
-            createdAt: new Date().toISOString(),
-          })
-        }
-        this.columnForm = { name: '', description: '', color: '#764ba2' }
-        this.showColumnDialog = false
-      },
-      async deleteColumn(id) {
-        if (this.currentUser) {
-          await this.apiFetch(`/api/columns/${id}`, { method: 'DELETE' })
-          await this.loadFromApi()
-        } else {
-          this.tasks = this.tasks.map(t => t.columnId === id ? { ...t, columnId: 'default' } : t)
-          this.columns = this.columns.filter(c => c.id !== id)
-        }
-      },
-      formatColDate(iso) {
-        return new Date(iso).toLocaleDateString('lv-LV', { day: 'numeric', month: 'short', year: 'numeric' })
-      },
-
-      tasksByStatus(status) {
-        return this.tasks.filter(t => t.status === status)
-      },
-      tasksByQuadrant(quadrant) {
-        return this.tasks.filter(t => t.quadrant === quadrant)
-      },
-      tasksForDay(dateStr) {
-        if (!dateStr) return []
-        return this.tasks.filter(t => t.due_date === dateStr)
-      },
       openTaskDialog(task = null, due_date = '') {
         this.editingTask = task || null
         this.taskForm = task
@@ -1587,6 +877,7 @@
           : { title: '', description: '', status: 'pending', due_date: due_date || '', priority: 'medium', est_pomodoros: 1 }
         this.showTaskDialog = true
       },
+
       async saveTask() {
         if (!this.taskForm.title.trim()) return
         try {
@@ -1607,14 +898,14 @@
               })
               if (!res.ok) throw new Error()
               const created = await res.json()
-              this.tasks.push({ id: created.id, quadrant: null, columnId: defaultColId, ...this.taskForm })
+              this.tasks.push({ id: created.id, quadrant: null, x_pos: null, y_pos: null, columnId: defaultColId, ...this.taskForm })
             }
           } else {
             if (this.editingTask) {
               const idx = this.tasks.findIndex(t => t.id === this.editingTask.id)
               if (idx !== -1) this.tasks.splice(idx, 1, { ...this.tasks[idx], ...this.taskForm })
             } else {
-              this.tasks.push({ id: Date.now(), quadrant: null, columnId: 'default', ...this.taskForm })
+              this.tasks.push({ id: Date.now(), quadrant: null, x_pos: null, y_pos: null, columnId: 'default', ...this.taskForm })
             }
           }
           this.showTaskDialog = false
@@ -1622,61 +913,57 @@
           this.showSnackbar('Neizdevās saglabāt uzdevumu. Mēģiniet vēlreiz.')
         }
       },
+
       async deleteTask(id) {
         try {
           if (this.currentUser) {
             const res = await this.apiFetch(`/api/tasks/${id}`, { method: 'DELETE' })
             if (!res.ok) throw new Error()
           }
-          this.tasks = this.tasks.filter(t => t.id !== id)
+          const idx = this.tasks.findIndex(t => t.id !== id)
+          const delIdx = this.tasks.findIndex(t => t.id === id)
+          if (delIdx !== -1) this.tasks.splice(delIdx, 1)
         } catch {
           this.showSnackbar('Neizdevās dzēst uzdevumu. Mēģiniet vēlreiz.')
         }
       },
-      clearMatrix() {
-        this.tasks = this.tasks.map(t => ({ ...t, quadrant: null }))
-      },
-      onDragStart(event, taskId) {
-        this.draggedTaskId = taskId
-        event.dataTransfer.setData('text/plain', String(taskId))
-        event.dataTransfer.effectAllowed = 'move'
-      },
-      async onDropToQuadrant(quadrant) {
-        if (this.draggedTaskId === null) return
-        const id = this.draggedTaskId
-        this.draggedTaskId = null
-        const idx = this.tasks.findIndex(t => t.id === id)
-        if (idx === -1) return
-        this.tasks.splice(idx, 1, { ...this.tasks[idx], quadrant })
+
+      async saveColumn() {
+        if (!this.columnForm.name.trim()) return
         if (this.currentUser) {
-          try {
-            const res = await this.apiFetch(`/api/tasks/${id}`, { method: 'PUT', body: JSON.stringify({ quadrant }) })
-            if (!res.ok) throw new Error()
-          } catch {
-            this.showSnackbar('Neizdevās saglabāt matricas izmaiņas.')
-          }
+          const res = await this.apiFetch('/api/columns', {
+            method: 'POST',
+            body: JSON.stringify(this.columnForm),
+          })
+          const created = await res.json()
+          this.columns.push({
+            id: created.id, name: created.name,
+            description: created.description || '',
+            color: created.color || '#8B6E43',
+            createdAt: created.created_at,
+          })
+        } else {
+          this.columns.push({
+            id: Date.now(), name: this.columnForm.name,
+            description: this.columnForm.description,
+            createdAt: new Date().toISOString(),
+          })
         }
+        this.columnForm = { name: '', description: '', color: '#8B6E43' }
+        this.showColumnDialog = false
       },
-      async onDropToCalendarDay(dateStr) {
-        if (this.draggedTaskId === null) return
-        const id = this.draggedTaskId
-        this.draggedTaskId = null
-        const idx = this.tasks.findIndex(t => t.id === id)
-        if (idx === -1) return
-        this.tasks.splice(idx, 1, { ...this.tasks[idx], due_date: dateStr })
+
+      async deleteColumn(id) {
         if (this.currentUser) {
-          try {
-            const res = await this.apiFetch(`/api/tasks/${id}`, { method: 'PUT', body: JSON.stringify({ due_date: dateStr }) })
-            if (!res.ok) throw new Error()
-          } catch {
-            this.showSnackbar('Neizdevās saglabāt kalendāra izmaiņas.')
-          }
+          await this.apiFetch(`/api/columns/${id}`, { method: 'DELETE' })
+          await this.loadFromApi()
+        } else {
+          this.tasks.forEach((t, i) => {
+            if (t.columnId === id) this.tasks.splice(i, 1, { ...t, columnId: 'default' })
+          })
+          const colIdx = this.columns.findIndex(c => c.id === id)
+          if (colIdx !== -1) this.columns.splice(colIdx, 1)
         }
-      },
-      changeMonth(delta) {
-        this.calendarMonth += delta
-        if (this.calendarMonth > 11) { this.calendarMonth = 0; this.calendarYear++ }
-        if (this.calendarMonth < 0)  { this.calendarMonth = 11; this.calendarYear-- }
       },
 
       async logout() {
@@ -1686,136 +973,87 @@
           credentials: 'include'
         })
         this.currentUser = null
-        this.tasks = JSON.parse(localStorage.getItem('tf_tasks') || '[]')
-        this.columns = JSON.parse(localStorage.getItem('tf_columns') || 'null') || [
-          { id: 'default', name: 'Iesūtne', description: 'Noklusējuma kolonna', createdAt: new Date().toISOString() }
-        ]
+        const localTasks = JSON.parse(localStorage.getItem('tf_tasks') || '[]')
+        const localCols  = JSON.parse(localStorage.getItem('tf_columns') || 'null') || [{ id: 'default', name: 'Iesūtne', description: 'Noklusējuma kolonna', createdAt: new Date().toISOString() }]
+        this.tasks.splice(0, this.tasks.length, ...localTasks)
+        this.columns.splice(0, this.columns.length, ...localCols)
       },
 
       apiFetch(url, options = {}) {
-        return fetch(url, {
-          ...options,
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', ...(options.headers || {}) },
-          credentials: 'include',
-        })
+        return apiFetch(url, options)
       },
 
-      // ── Forum ──────────────────────────────────────────────
-
-      async loadForumCategories() {
-        this.forumLoading = true
+      async uploadAvatar(event) {
+        const file = event.target.files?.[0]
+        if (!file) return
+        this.avatarUploading = true
         try {
-          const res = await this.apiFetch('/api/forum/categories')
-          if (!res.ok) throw new Error()
-          this.forumCategories = await res.json()
-        } catch {
-          this.showSnackbar('Neizdevās ielādēt foruma kategorijas.')
-        } finally {
-          this.forumLoading = false
-        }
-      },
-
-      async openForumCategory(cat) {
-        this.forumCategory = cat
-        this.forumView = 'posts'
-        this.forumLoading = true
-        try {
-          const res = await this.apiFetch(`/api/forum/categories/${cat.id}/posts`)
-          if (!res.ok) throw new Error()
-          this.forumPosts = await res.json()
-        } catch {
-          this.showSnackbar('Neizdevās ielādēt ierakstus.')
-        } finally {
-          this.forumLoading = false
-        }
-      },
-
-      async openForumPost(post) {
-        this.forumView = 'post'
-        this.forumPostData = null
-        this.forumLoading = true
-        this.forumNewComment = ''
-        try {
-          const res = await this.apiFetch(`/api/forum/posts/${post.id}`)
-          if (!res.ok) throw new Error()
-          this.forumPostData = await res.json()
-        } catch {
-          this.showSnackbar('Neizdevās ielādēt ierakstu.')
-        } finally {
-          this.forumLoading = false
-        }
-      },
-
-      async submitForumPost() {
-        if (!this.forumNewPost.title.trim() || !this.forumNewPost.body.trim()) return
-        try {
-          const res = await this.apiFetch(`/api/forum/categories/${this.forumCategory.id}/posts`, {
+          const form = new FormData()
+          form.append('avatar', file)
+          const res = await fetch('/api/user/avatar', {
             method: 'POST',
-            body: JSON.stringify(this.forumNewPost),
-          })
-          if (!res.ok) throw new Error()
-          const created = await res.json()
-          this.forumPosts.unshift(created)
-          this.forumNewPost = { title: '', body: '' }
-          this.showNewPostDialog = false
-          if (this.forumCategory) this.forumCategory.posts_count = (this.forumCategory.posts_count || 0) + 1
-        } catch {
-          this.showSnackbar('Neizdevās publicēt ierakstu. Mēģiniet vēlreiz.')
-        }
-      },
-
-      async submitForumComment() {
-        if (!this.forumNewComment.trim() || !this.forumPostData) return
-        try {
-          const res = await this.apiFetch(`/api/forum/posts/${this.forumPostData.post.id}/comments`, {
-            method: 'POST',
-            body: JSON.stringify({ body: this.forumNewComment }),
-          })
-          if (!res.ok) throw new Error()
-          const created = await res.json()
-          this.forumPostData.comments.unshift(created)
-          this.forumNewComment = ''
-        } catch {
-          this.showSnackbar('Neizdevās publicēt komentāru. Mēģiniet vēlreiz.')
-        }
-      },
-
-      async castVote(comment, value) {
-        if (!this.currentUser) { this.showLoginWindow = true; return }
-        try {
-          const res = await this.apiFetch(`/api/forum/comments/${comment.id}/vote`, {
-            method: 'POST',
-            body: JSON.stringify({ value }),
+            headers: { 'Accept': 'application/json' },
+            credentials: 'include',
+            body: form,
           })
           if (!res.ok) throw new Error()
           const data = await res.json()
-          const idx = this.forumPostData.comments.findIndex(c => c.id === comment.id)
-          if (idx !== -1) {
-            this.forumPostData.comments.splice(idx, 1, {
-              ...this.forumPostData.comments[idx],
-              upvotes:   data.upvotes,
-              downvotes: data.downvotes,
-              user_vote: data.user_vote,
-            })
-          }
+          this.currentUser = { ...this.currentUser, avatar_url: data.avatar_url }
+          this.showSnackbar(this.s.avatarSaved, 'success')
         } catch {
-          this.showSnackbar('Neizdevās reģistrēt balsi. Mēģiniet vēlreiz.')
+          this.showSnackbar('Neizdevās saglabāt foto.')
+        } finally {
+          this.avatarUploading = false
         }
       },
 
-      timeAgo(dateStr) {
-        const diff = Date.now() - new Date(dateStr).getTime()
-        const mins  = Math.floor(diff / 60000)
-        const hours = Math.floor(diff / 3600000)
-        const days  = Math.floor(diff / 86400000)
-        if (mins  < 1)  return 'tikko'
-        if (mins  < 60) return `pirms ${mins} min`
-        if (hours < 24) return `pirms ${hours} h`
-        if (days  < 7)  return `pirms ${days} d`
-        return new Date(dateStr).toLocaleDateString('lv-LV', { day: 'numeric', month: 'short' })
+      async saveProfile() {
+        this.profileError = ''
+        this.profileSaving = true
+        try {
+          const res = await this.apiFetch('/api/user/profile', {
+            method: 'PUT',
+            body: JSON.stringify(this.profileForm),
+          })
+          const data = await res.json()
+          if (!res.ok) {
+            this.profileError = Object.values(data.errors || {}).flat()[0] || data.message || 'Kļūda.'
+            return
+          }
+          this.currentUser = { ...this.currentUser, ...data.user }
+          this.showSnackbar(this.s.profileSaved, 'success')
+        } catch {
+          this.profileError = 'Servera kļūda.'
+        } finally {
+          this.profileSaving = false
+        }
       },
 
-      // ───────────────────────────────────────────────────────
+      async savePassword() {
+        this.passwordError = ''
+        this.passwordSaving = true
+        try {
+          const res = await this.apiFetch('/api/user/password', {
+            method: 'PUT',
+            body: JSON.stringify(this.passwordForm),
+          })
+          const data = await res.json()
+          if (!res.ok) {
+            this.passwordError = Object.values(data.errors || {}).flat()[0] || data.message || 'Kļūda.'
+            return
+          }
+          this.passwordForm = { current_password: '', password: '', password_confirmation: '' }
+          this.showSnackbar(this.s.profilePassSaved, 'success')
+        } catch {
+          this.passwordError = 'Servera kļūda.'
+        } finally {
+          this.passwordSaving = false
+        }
+      },
+
+      async resendVerification() {
+        // verification disabled
+      },
 
       async loadFromApi() {
         try {
@@ -1827,17 +1065,18 @@
           const cols  = await colRes.json()
           const tasks = await taskRes.json()
 
-          this.columns = cols.map(c => ({
+          const mappedCols = cols.map(c => ({
             id:          c.id,
             name:        c.name,
             description: c.description || '',
-            color:       c.color || '#764ba2',
+            color:       c.color || '#8B6E43',
             createdAt:   c.created_at,
           }))
+          this.columns.splice(0, this.columns.length, ...mappedCols)
 
           const defaultId = this.columns[0]?.id ?? null
 
-          this.tasks = tasks.map(t => ({
+          const mappedTasks = tasks.map(t => ({
             id:          t.id,
             title:       t.title,
             description: t.description || '',
@@ -1845,10 +1084,13 @@
             priority:    t.priority || 'medium',
             due_date:       t.due_date,
             quadrant:       t.quadrant,
+            x_pos:          t.x_pos != null ? parseFloat(t.x_pos) : null,
+            y_pos:          t.y_pos != null ? parseFloat(t.y_pos) : null,
             columnId:       t.column_id ?? defaultId,
             est_pomodoros:  t.est_pomodoros  ?? 1,
             done_pomodoros: t.done_pomodoros ?? 0,
           }))
+          this.tasks.splice(0, this.tasks.length, ...mappedTasks)
         } catch {
           this.showSnackbar('Neizdevās ielādēt datus no servera.')
         }
@@ -1856,16 +1098,16 @@
     },
 
     async mounted() {
+      const savedLang = localStorage.getItem('language')
+      if (savedLang === 'en' || savedLang === 'lv') this.language = savedLang
+
       const saved = localStorage.getItem('darkMode')
-      const appElement = document.getElementById('simple-app')
       if (saved === 'true') {
         this.darkMode = true
         this.theme.global.name.value = 'dark'
-        appElement?.classList.add('dark-theme')
       } else {
         this.darkMode = false
         this.theme.global.name.value = 'light'
-        appElement?.classList.remove('dark-theme')
       }
 
       if (window.Notification && Notification.permission !== 'granted') {
@@ -1874,6 +1116,16 @@
             console.log('Notification permission denied')
           }
         })
+      }
+
+      // Load pomodoro settings from localStorage
+      const savedSettings = localStorage.getItem('pomo_settings')
+      if (savedSettings) {
+        try {
+          const ps = JSON.parse(savedSettings)
+          // PomodoroTool manages its own state; just store for reference
+          // Settings will be applied by PomodoroTool itself via its own data
+        } catch {}
       }
 
       try {
@@ -1885,6 +1137,15 @@
         if (data.user) {
           this.currentUser = data.user
           await this.loadFromApi()
+
+          // Load server-side pomodoro settings (PomodoroTool will pick these up via localStorage)
+          try {
+            const sr = await this.apiFetch('/api/pomodoro/settings')
+            if (sr.ok) {
+              const ps = await sr.json()
+              localStorage.setItem('pomo_settings', JSON.stringify(ps))
+            }
+          } catch {}
         }
       } catch {
         // not logged in, silently ignore
@@ -1893,72 +1154,120 @@
   }
 </script>
 
-<style scoped lang="css">
+<style lang="css">
+  /* Skip-to-content link — visible only on keyboard focus */
+  .skip-link {
+    position: fixed;
+    top: -100%;
+    left: 8px;
+    background: #8B6E43;
+    color: #fff;
+    padding: 8px 18px;
+    z-index: 9999;
+    text-decoration: none;
+    font-weight: 600;
+    border-radius: 0 0 4px 4px;
+    transition: top 0.15s;
+  }
+  .skip-link:focus { top: 0; outline: 3px solid #d4a851; outline-offset: 2px; }
+
   #simple-app {
     font-family: Bahnschrift, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-color: #e4dccf;
+    background-image:
+      repeating-linear-gradient(88deg, transparent 0, transparent 5px, rgba(90,60,20,.04) 5px, rgba(90,60,20,.04) 6px),
+      repeating-linear-gradient(92deg, transparent 0, transparent 14px, rgba(65,45,15,.03) 14px, rgba(65,45,15,.03) 15px),
+      linear-gradient(176deg, #d8cfbe 0%, #e4dccf 50%, #d8cfbe 100%);
     min-height: calc(100vh + 20px);
   }
 
   .site-header {
-    background-color: #ffffff;
-    color: #000000;
+    background-color: #1c1c1c !important;
+    border-bottom: 2px solid #8B6E43 !important;
     z-index: 1000;
   }
 
-  .site-header :deep(.v-toolbar-title) {
-    overflow: visible;
-  }
+  .site-header .v-toolbar-title { overflow: visible; }
 
   .header-logo {
     font-size: 1.8rem;
     font-weight: bolder;
-    font-family: bahnschrift, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: Bahnschrift, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     white-space: nowrap;
+    color: #d4a851;
+    letter-spacing: 0.06em;
   }
+
+  .nav-burger-btn { color: #d4a851 !important; }
+
+  /* ── Navigation Drawer ── */
+  .nav-drawer { background: #1c1c1c !important; }
+
+  .drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid rgba(139,110,67,.4);
+  }
+
+  .drawer-logo {
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    color: #d4a851;
+    font-family: Bahnschrift, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  .drawer-section-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #8B6E43;
+    padding: 14px 20px 4px;
+  }
+
+  .nav-drawer .v-list-item-title { color: #d4cbbf; }
+  .nav-drawer .v-list-item:hover > .v-list-item__overlay { opacity: 0.12; background: #8B6E43; }
+  .nav-drawer .v-list-item--active > .v-list-item__overlay { background: #8B6E43; opacity: 0.2; }
+  .nav-drawer .v-list-item__prepend .v-icon { color: #8B6E43 !important; }
+
+  .drawer-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 20px;
+    color: #d4a851;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  .drawer-login-btn { padding: 16px 20px; }
 
   .site-title {
     margin: 0;
     font-size: 2.5rem;
     font-weight: bolder;
-    font-family: bahnschrift, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: Bahnschrift, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     text-align: center;
+    letter-spacing: 0.04em;
+    color: #1c1c1c;
   }
 
-  .navigation {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    text-align: center;
-    gap: 10px;
-    align-items: center;
-  }
-
-  .navigation :deep(.v-btn) {
-    margin: 0 5px;
-  }
-
-  .nav-user {
-    font-weight: 600;
-    padding: 0 8px;
-  }
-
-  .main-content {
-    display: block;
-    height: auto;
-  }
+  .main-content { display: block; height: auto; }
 
   .site-section {
     padding: 20px;
-    background-color: #f9f9f9;
+    background-color: #faf6ef;
     margin-bottom: 20px;
-    border-radius: 8px;
+    border-radius: 0;
+    border-left: 3px solid #8B6E43;
     margin-top: 0;
   }
 
-
   .hero-section {
-    background-color: #ffffff;
+    background-color: #faf6ef;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -1966,17 +1275,12 @@
     min-height: 80vh;
     gap: 20px;
     padding: 60px 40px;
+    border-bottom: 2px solid #c8b89a;
   }
 
-  .hero-section p {
-    max-width: 720px;
-    text-align: center;
-  }
+  .hero-section p { max-width: 720px; text-align: center; color: #444; }
 
-  .description {
-    background-color: #ffffff;
-    border-radius: 8px;
-  }
+  .description { background-color: #faf6ef; border-radius: 0; }
 
 
 /* Cards styling */
@@ -1984,12 +1288,12 @@
   .card {
     display: flex;
     flex-direction: column;
-    background-color: rgb(255, 255, 255);
-    color: rgb(0, 0, 0);
+    background-color: #faf6ef;
+    color: #1c1c1c;
     margin: 10px;
-    transition: transform 0.3s, box-shadow 0.3s;
-    border: 3px solid #764ba2;
-    border-radius: 12px;
+    transition: transform 0.25s, box-shadow 0.25s;
+    border: 2px solid #8B6E43;
+    border-radius: 0;
     box-sizing: border-box;
     width: auto;
     min-height: 300px;
@@ -1998,16 +1302,16 @@
   }
 
   .card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 12px 32px rgba(118, 75, 162, 0.35);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(100,72,20,0.28);
     z-index: 2;
   }
 
   .card-in-card {
-    background-color: rgb(235, 235, 235);
+    background-color: #f0e8d8;
     padding: 24px 16px;
     margin: 16px;
-    border-radius: 8px;
+    border-radius: 0;
     text-align: center;
     flex: 1;
     display: flex;
@@ -2016,57 +1320,36 @@
     gap: 10px;
   }
 
-  .card-in-card h3 {
-    margin: 0;
-    font-size: 1.1rem;
+  .card-in-card h3 { margin: 0; font-size: 1.1rem; }
+
+  #pomodoro-card, #task-card, #eisenhower-card, #calendar-card {
+    background-color: #faf6ef;
+    color: #1c1c1c;
   }
 
-
-  #pomodoro-card,
-  #task-card,
-  #eisenhower-card,
-  #calendar-card {
-    background-color: rgb(255, 255, 255);
-    color: #000000;
-  }
-
-  /* Features grid */
-  .features-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    margin-top: 20px;
-  }
+  .features-grid { display: flex; flex-wrap: wrap; gap: 20px; margin-top: 20px; }
 
   .feature-card {
     flex: 1 1 calc(50% - 20px);
     padding: 15px;
-    border: 1px solid #cccccc;
-    background-color: #ffffff;
-    border-radius: 8px;
+    border: 1px solid #c8b89a;
+    background-color: #faf6ef;
+    border-radius: 0;
   }
 
-  /* Contact form */
-  .contact-content {
-    display: flex;
-    gap: 20px;
-    margin-top: 20px;
-    flex-wrap: wrap;
-  }
+  .contact-content { display: flex; gap: 20px; margin-top: 20px; flex-wrap: wrap; }
 
   .contact-info,
   .contact-form {
     flex: 1;
     min-width: 250px;
     padding: 15px;
-    background-color: #ffffff;
-    border-radius: 8px;
+    background-color: #faf6ef;
+    border-radius: 0;
   }
 
-  .contact-form :deep(.v-text-field),
-  .contact-form :deep(.v-textarea) {
-    background-color: #f8f8f8;
-  }
+  .contact-form .v-text-field,
+  .contact-form .v-textarea { background-color: #f0e8d8; }
 
 
   /* ── Pomodoro ─────────────────────────────────────── */
@@ -2082,9 +1365,9 @@
 
   /* Timer card */
   .pomo-card { text-align: center; transition: background 0.4s; }
-  .pomo-phase-work      { background: linear-gradient(135deg, #c0392b 0%, #764ba2 100%) !important; color: #fff !important; }
-  .pomo-phase-break     { background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%) !important; color: #fff !important; }
-  .pomo-phase-longBreak { background: linear-gradient(135deg, #2980b9 0%, #6dd5fa 100%) !important; color: #fff !important; }
+  .pomo-phase-work      { background: linear-gradient(135deg, #7b2d2d 0%, #4a2010 100%) !important; color: #fff !important; }
+  .pomo-phase-break     { background: linear-gradient(135deg, #1a5c35 0%, #2d7a4f 100%) !important; color: #fff !important; }
+  .pomo-phase-longBreak { background: linear-gradient(135deg, #1a3a5c 0%, #2d5a7a 100%) !important; color: #fff !important; }
   .pomo-card-body { padding: 28px 24px 20px !important; }
 
   /* Top row: mode switcher + gear */
@@ -2096,15 +1379,15 @@
   }
   .pomo-mode-switcher {
     display: flex;
-    background: rgba(0,0,0,0.2);
-    border-radius: 20px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 2px;
     padding: 3px;
     gap: 2px;
   }
   .pomo-mode-btn {
     background: transparent;
     border: none;
-    border-radius: 16px;
+    border-radius: 1px;
     color: rgba(255,255,255,0.75);
     cursor: pointer;
     font-size: 0.78rem;
@@ -2117,9 +1400,9 @@
   .pomo-mode-btn:hover  { color: #fff; }
 
   .pomo-gear-btn {
-    background: rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.15);
     border: none;
-    border-radius: 50%;
+    border-radius: 0;
     color: #fff;
     cursor: pointer;
     width: 34px; height: 34px;
@@ -2136,8 +1419,8 @@
     margin-bottom: 12px;
   }
   .pomo-tab {
-    background: rgba(255,255,255,0.18);
-    border: none; border-radius: 20px;
+    background: rgba(255,255,255,0.15);
+    border: none; border-radius: 2px;
     color: rgba(255,255,255,0.8);
     cursor: pointer; font-size: 0.82rem; font-weight: 600;
     padding: 5px 16px;
@@ -2177,33 +1460,33 @@
 
   /* Controls */
   .pomo-controls { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 16px; }
-  .pomo-start-btn :deep(.v-btn__content) { font-size: 0.95rem; font-weight: 700; letter-spacing: 3px; }
-  .pomo-start-btn { min-width: 130px !important; background: rgba(255,255,255,0.95) !important; color: #333 !important; }
+  .pomo-start-btn .v-btn__content { font-size: 0.95rem; font-weight: 700; letter-spacing: 3px; }
+  .pomo-start-btn { min-width: 130px !important; background: rgba(255,255,255,0.92) !important; color: #1c1c1c !important; border-radius: 0 !important; }
   .pomo-icon-btn  { color: rgba(255,255,255,0.8) !important; }
 
   /* Meta row */
   .pomo-meta-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; opacity: 0.85; }
   .pomo-session-label { font-size: 0.8rem; }
-  .pomo-autostart :deep(.v-label)        { font-size: 0.78rem; color: rgba(255,255,255,0.85); }
-  .pomo-autostart :deep(.v-switch__track){ opacity: 0.6; }
+  .pomo-autostart .v-label        { font-size: 0.78rem; color: rgba(255,255,255,0.85); }
+  .pomo-autostart .v-switch__track{ opacity: 0.6; }
 
   /* Right panel */
   .pomo-right-panel { display: flex; flex-direction: column; }
   .pomo-panel-tabs  { background: transparent !important; }
 
   /* Task list card */
-  .pomo-tasks-card   { background: #fff !important; }
+  .pomo-tasks-card   { background: #faf6ef !important; border-radius: 0 !important; }
   .pomo-tasks-header { display: flex; justify-content: space-between; align-items: center; }
   .pomo-tasks-title  { font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #555; }
   .pomo-empty        { text-align: center; color: #aaa; padding: 20px 0; font-size: 0.88rem; }
 
   .pomo-task-row {
     display: flex; align-items: center; gap: 8px;
-    padding: 7px 6px; border-radius: 6px;
+    padding: 7px 6px; border-radius: 0;
     transition: background 0.15s;
   }
-  .pomo-task-row:hover           { background: #f5f5f5; }
-  .pomo-task-focused             { background: #f0eafa !important; border-left: 3px solid #764ba2; }
+  .pomo-task-row:hover           { background: #f0e8d8; }
+  .pomo-task-focused             { background: #f0e8d8 !important; border-left: 3px solid #8B6E43; }
   .pomo-task-done .pomo-task-name{ text-decoration: line-through; color: #aaa; }
 
   .pomo-task-name {
@@ -2216,15 +1499,15 @@
   /* Queue rows */
   .pomo-queue-row {
     display: flex; align-items: center; gap: 6px;
-    padding: 7px 6px; border-radius: 6px;
+    padding: 7px 6px; border-radius: 0;
     transition: background 0.15s;
   }
-  .pomo-queue-row:hover  { background: #f5f5f5; }
-  .pomo-queue-active     { background: #f0eafa !important; border-left: 3px solid #764ba2; font-weight: 600; }
+  .pomo-queue-row:hover  { background: #f0e8d8; }
+  .pomo-queue-active     { background: #f0e8d8 !important; border-left: 3px solid #8B6E43; font-weight: 600; }
   .pomo-queue-done       { opacity: 0.4; text-decoration: line-through; }
   .pomo-queue-label      { flex: 1; font-size: 0.92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .pomo-queue-dur        { font-size: 0.8rem; color: #888; white-space: nowrap; margin-right: 4px; }
-  .pomo-queue-total      { font-size: 0.82rem; color: #888; text-align: right; border-top: 1px solid #eee; padding-top: 8px; }
+  .pomo-queue-total      { font-size: 0.82rem; color: #888; text-align: right; border-top: 1px solid #e0d8cc; padding-top: 8px; }
 
   @media (max-width: 700px) {
     .pomo-layout  { grid-template-columns: 1fr; }
@@ -2233,17 +1516,12 @@
 
   /* Footer */
   #footer-section {
-    background-color: #ffffff;
+    background-color: #1c1c1c;
+    color: #8B6E43;
     text-align: center;
     padding: 20px;
   }
 
-  /* Active navigation button */
-  .navigation :deep(.active) {
-    text-decoration: underline;
-  }
-
-  /* Responsive */
   /* ── Board toolbar ── */
   .board-toolbar {
     display: flex;
@@ -2268,8 +1546,9 @@
   .trello-column {
     min-width: 260px;
     max-width: 260px;
-    background: #f4f4f4;
-    border-radius: 10px;
+    background: #f0e8d8;
+    border-radius: 0;
+    border: 1px solid #c8b89a;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
@@ -2279,9 +1558,9 @@
     justify-content: space-between;
     align-items: flex-start;
     padding: 12px 10px 10px;
-    border-bottom: 3px solid #764ba2;
-    border-radius: 10px 10px 0 0;
-    background: #ede7f6;
+    border-bottom: 3px solid #8B6E43;
+    border-radius: 0;
+    background: #e8dcc8;
   }
   .trello-col-meta {
     display: flex;
@@ -2300,7 +1579,7 @@
   }
   .trello-col-desc {
     font-size: 0.76rem;
-    color: #666;
+    color: #555;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2315,8 +1594,9 @@
     flex: 1;
   }
   .trello-task-card {
-    border-left: 3px solid #764ba2 !important;
-    border-radius: 6px !important;
+    border-left: 3px solid #8B6E43 !important;
+    border-radius: 0 !important;
+    background: #faf6ef !important;
     cursor: grab;
   }
   .trello-task-card:active { cursor: grabbing; }
@@ -2341,8 +1621,8 @@
     min-width: 260px;
     max-width: 260px;
     min-height: 80px;
-    border: 2px dashed #ccc;
-    border-radius: 10px;
+    border: 2px dashed #c8b89a;
+    border-radius: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -2354,33 +1634,20 @@
     transition: border-color 0.2s, color 0.2s;
     font-size: 0.85rem;
   }
-  .trello-add-col:hover {
-    border-color: #764ba2;
-    color: #764ba2;
-  }
+  .trello-add-col:hover { border-color: #8B6E43; color: #8B6E43; }
 
-  /* Column drag-over highlight */
-  .trello-column.drag-over {
-    outline: 2px dashed #764ba2;
-    background: #ede7f6;
-  }
+  .trello-column.drag-over { outline: 2px dashed #8B6E43; background: #f0e8d8; }
 
-  /* Collapsed column */
-  .trello-column.col-collapsed {
-    min-height: unset;
-  }
-  .trello-column.col-collapsed .trello-col-header {
-    border-radius: 10px;
-  }
+  .trello-column.col-collapsed { min-height: unset; }
+  .trello-column.col-collapsed .trello-col-header { border-radius: 0; }
 
-  /* Count badge */
   .trello-col-count {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     min-width: 20px;
     height: 20px;
-    border-radius: 10px;
+    border-radius: 0;
     padding: 0 6px;
     font-size: 0.7rem;
     font-weight: 700;
@@ -2403,7 +1670,10 @@
 
   /* Task actions fade in on hover */
   .task-actions { opacity: 1; }
-  .chip-del { margin-left: 6px; opacity: 0.5; cursor: pointer; font-weight: bold; font-size: 0.9em; }
+  .chip-del {
+    margin-left: 6px; opacity: 0.5; cursor: pointer; font-weight: bold; font-size: 0.9em;
+    background: none; border: none; padding: 0; line-height: inherit; color: inherit;
+  }
   .chip-del:hover { opacity: 1; color: #ef5350; }
 
   /* Quick-add */
@@ -2416,7 +1686,7 @@
     justify-content: flex-start !important;
     letter-spacing: 0;
   }
-  .quick-add-btn:hover { color: #764ba2 !important; }
+  .quick-add-btn:hover { color: #8B6E43 !important; }
 
   /* Column color picker in dialog */
   .col-color-picker {
@@ -2435,74 +1705,118 @@
   }
   .col-color-swatch:hover { transform: scale(1.2); }
 
-  /* ── Eisenhower Matrix ── */
-  .matrix-axis-row {
+  /* ── Eisenhower Matrix (free-position canvas) ── */
+  .mfree-wrap {
     display: flex;
-    align-items: center;
+    align-items: stretch;
     gap: 8px;
   }
-  .matrix-axis-label-y {
+  .mfree-y-label {
     writing-mode: vertical-rl;
     transform: rotate(180deg);
     font-weight: 600;
     font-size: 0.8rem;
-    color: #764ba2;
+    color: #8B6E43;
     letter-spacing: 1px;
     text-align: center;
     min-width: 20px;
+    flex-shrink: 0;
   }
-  .matrix-axis-label-x {
+  .mfree-canvas-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .mfree-x-label {
     text-align: center;
     font-weight: 600;
     font-size: 0.8rem;
-    color: #764ba2;
+    color: #8B6E43;
     letter-spacing: 1px;
     margin-top: 6px;
   }
-  .matrix-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    flex: 1;
-  }
-  .matrix-quadrant {
-    border-radius: 10px;
-    padding: 14px;
-    min-height: 200px;
-    display: flex;
-    flex-direction: column;
-    transition: filter 0.15s;
-  }
-  .matrix-quadrant[draggable-over] { filter: brightness(0.94); }
-  .q-do       { background: #ffebee; border: 2px solid #ef5350; }
-  .q-schedule { background: #e8f5e9; border: 2px solid #66bb6a; }
-  .q-delegate { background: #fff3e0; border: 2px solid #ffa726; }
-  .q-eliminate{ background: #f3e5f5; border: 2px solid #ab47bc; }
-  .q-label {
-    font-weight: 700;
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    margin-bottom: 10px;
-    line-height: 1.4;
-  }
-  .q-tasks {
-    flex: 1;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    align-content: flex-start;
-  }
-  .q-chip {
-    background: rgba(255,255,255,0.85);
-    border-radius: 20px;
-    padding: 4px 12px;
-    font-size: 0.82rem;
-    cursor: grab;
-    border: 1px solid rgba(0,0,0,0.12);
+  .mfree-canvas {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border: 2px solid #8B6E43;
+    overflow: hidden;
+    cursor: default;
     user-select: none;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
   }
-  .q-chip:active { cursor: grabbing; opacity: 0.7; }
+  /* Quadrant backgrounds — each covers exactly one quarter */
+  .mfree-q {
+    position: absolute;
+    width: 50%; height: 50%;
+    display: flex;
+    pointer-events: none;
+  }
+  .mfree-q-do       { top:0; left:0;   background: rgba(192, 57, 43, 0.07);  align-items: flex-start;    justify-content: flex-start; }
+  .mfree-q-schedule { top:0; right:0;  background: rgba(90, 154, 74, 0.07);  align-items: flex-start;    justify-content: flex-end;   }
+  .mfree-q-delegate { bottom:0; left:0;  background: rgba(200,125, 42, 0.07); align-items: flex-end;      justify-content: flex-start; }
+  .mfree-q-eliminate{ bottom:0; right:0; background: rgba(139,110, 67, 0.06); align-items: flex-end;      justify-content: flex-end;   }
+  .mfree-q-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    opacity: 0.35;
+    line-height: 1.35;
+    padding: 6px 8px;
+    letter-spacing: 0.04em;
+  }
+  .mfree-q-label-right { text-align: right; }
+  /* Divider lines */
+  .mfree-vline {
+    position: absolute;
+    left: 50%; top: 0; bottom: 0;
+    width: 1px;
+    background: rgba(139,110,67,0.3);
+    pointer-events: none;
+  }
+  .mfree-hline {
+    position: absolute;
+    top: 50%; left: 0; right: 0;
+    height: 1px;
+    background: rgba(139,110,67,0.3);
+    pointer-events: none;
+  }
+  /* Task chips — positioned absolutely, centered on their coordinate */
+  .mfree-chip {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(255,255,255,0.92);
+    border: 1px solid #8B6E43;
+    border-radius: 12px;
+    padding: 3px 6px 3px 9px;
+    font-size: 0.76rem;
+    max-width: 130px;
+    cursor: grab;
+    user-select: none;
+    z-index: 10;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.13);
+    white-space: nowrap;
+    transition: box-shadow 0.1s;
+  }
+  .mfree-chip:hover { box-shadow: 0 3px 10px rgba(0,0,0,0.2); z-index: 11; }
+  .mfree-chip-dragging { cursor: grabbing; box-shadow: 0 6px 18px rgba(0,0,0,0.28); z-index: 20; transition: none; }
+  .mfree-chip-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100px; }
+  .mfree-chip-del {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #999;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0 2px;
+    border-radius: 50%;
+    transition: color 0.15s;
+  }
+  .mfree-chip-del:hover { color: #c0392b; }
 
   /* ── Shared task pool ── */
   .task-pool {
@@ -2511,26 +1825,21 @@
     gap: 8px;
     min-height: 56px;
     padding: 12px;
-    background: #f0f0f0;
-    border-radius: 8px;
-    border: 2px dashed #ccc;
+    background: #ede4d4;
+    border-radius: 0;
+    border: 2px dashed #c8b89a;
     align-content: flex-start;
   }
-  .pool-empty {
-    width: 100%;
-    text-align: center;
-    color: #aaa;
-    font-size: 0.85rem;
-  }
+  .pool-empty { width: 100%; text-align: center; color: #aaa; font-size: 0.85rem; }
   .pool-chip {
-    background: #764ba2;
+    background: #8B6E43;
     color: #fff;
-    border-radius: 20px;
+    border-radius: 0;
     padding: 5px 14px;
     font-size: 0.82rem;
     cursor: grab;
     user-select: none;
-    box-shadow: 0 1px 4px rgba(118,75,162,0.3);
+    box-shadow: 0 1px 4px rgba(100,72,20,0.3);
   }
   .pool-chip:active { cursor: grabbing; opacity: 0.7; }
 
@@ -2539,15 +1848,27 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 12px;
+    gap: 16px;
+    flex-wrap: wrap;
     margin-bottom: 14px;
   }
+  .cal-nav-group {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
   .cal-month-label {
-    font-size: 1.15rem;
+    font-size: 1.1rem;
     font-weight: 600;
-    min-width: 220px;
+    min-width: 120px;
     text-align: center;
     text-transform: capitalize;
+  }
+  .cal-year-label {
+    font-size: 1.1rem;
+    font-weight: 600;
+    min-width: 56px;
+    text-align: center;
   }
   .cal-grid {
     display: grid;
@@ -2559,21 +1880,21 @@
     font-weight: 700;
     padding: 6px 0;
     font-size: 0.8rem;
-    color: #764ba2;
+    color: #8B6E43;
   }
   .cal-day-cell {
     min-height: 120px;
-    border: 1px solid #e8e8e8;
-    border-radius: 5px;
+    border: 1px solid #d8ccba;
+    border-radius: 0;
     padding: 5px;
-    background: #fff;
+    background: #faf6ef;
     cursor: pointer;
     transition: background 0.15s;
   }
-  .cal-day-cell:hover { background: #f9f0ff; }
-  .cal-other { background: #fafafa; cursor: default; }
-  .cal-other:hover { background: #fafafa; }
-  .cal-today { border-color: #764ba2 !important; }
+  .cal-day-cell:hover { background: #f0e8d8; }
+  .cal-other { background: #f5f0e8; cursor: default; }
+  .cal-other:hover { background: #f5f0e8; }
+  .cal-today { border-color: #8B6E43 !important; border-width: 2px !important; }
   .cal-day-num {
     display: inline-block;
     font-size: 0.8rem;
@@ -2584,17 +1905,17 @@
     text-align: center;
   }
   .cal-today .cal-day-num {
-    background: #764ba2;
+    background: #8B6E43;
     color: #fff;
-    border-radius: 50%;
+    border-radius: 0;
     line-height: 22px;
     height: 22px;
   }
   .cal-other .cal-day-num { color: #ccc; }
   .cal-task-block {
-    background: #764ba2;
+    background: #8B6E43;
     color: #fff;
-    border-radius: 3px;
+    border-radius: 0;
     padding: 1px 5px;
     font-size: 0.72rem;
     margin-bottom: 2px;
@@ -2604,7 +1925,7 @@
     cursor: pointer;
     user-select: none;
   }
-  .cal-task-block:hover { background: #5e3a87; }
+  .cal-task-block:hover { background: #6b4f2a; }
 
   /* ── Tool bottom navigation ── */
   .tool-bottom-nav {
@@ -2614,7 +1935,7 @@
     flex-wrap: wrap;
     gap: 8px;
     padding: 12px 4px;
-    border-top: 1px solid rgba(118, 75, 162, 0.2);
+    border-top: 1px solid rgba(139, 110, 67, 0.2);
   }
   .tool-links {
     display: flex;
@@ -2623,27 +1944,14 @@
   }
 
   @media (max-width: 768px) {
-    .site-title {
-      font-size: 1.5rem;
-    }
-
-    .navigation {
-      flex-direction: column;
-      justify-content: center;
-    }
-
-    .feature-card {
-      flex: 1 1 100%;
-    }
-
-    .contact-info,
-    .contact-form {
-      flex: 1 1 100%;
-    }
-
-    .timer-display {
-      font-size: 36px;
-    }
+    .site-title { font-size: 1.5rem; }
+    .feature-card { flex: 1 1 100%; }
+    .contact-info, .contact-form { flex: 1 1 100%; }
+    .timer-display { font-size: 36px; }
+    .hero-section { padding: 40px 20px; min-height: 60vh; }
+    .cal-day-cell { min-height: 60px; }
+    .mfree-canvas { aspect-ratio: 1 / 1; }
+    .trello-board { padding-bottom: 80px; }
   }
 
   /* ── Forum ─────────────────────────────────────────────── */
@@ -2652,16 +1960,18 @@
 
   .forum-header { text-align: center; }
   .forum-title  { font-size: 1.6rem; font-weight: 700; margin: 0 0 4px; }
-  .forum-subtitle { color: #777; font-size: 0.95rem; margin: 0; }
+  .forum-subtitle { color: #555; font-size: 0.95rem; margin: 0; }
 
   .forum-cat-card {
-    border-left: 5px solid #764ba2;
+    border-left: 5px solid #8B6E43;
     cursor: pointer;
+    border-radius: 0 !important;
+    background: #faf6ef !important;
     transition: box-shadow 0.2s, transform 0.15s;
   }
-  .forum-cat-card:hover { box-shadow: 0 4px 18px rgba(118,75,162,0.18); transform: translateY(-2px); }
+  .forum-cat-card:hover { box-shadow: 0 4px 18px rgba(100,72,20,0.18); transform: translateY(-2px); }
   .forum-cat-name { font-weight: 700; font-size: 0.97rem; margin-bottom: 2px; }
-  .forum-cat-desc { font-size: 0.82rem; color: #888; }
+  .forum-cat-desc { font-size: 0.82rem; color: #666; }
 
   .forum-cat-header {
     display: flex;
@@ -2671,13 +1981,38 @@
     gap: 10px;
   }
 
+  .forum-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+  .forum-search-field { flex: 1 1 200px; min-width: 160px; }
+  .forum-sort-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  .forum-fav-btn {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #bbb;
+    padding: 4px;
+    border-radius: 4px;
+    line-height: 1;
+    transition: color 0.15s;
+  }
+  .forum-fav-btn:hover { color: #d4a851; }
+  .forum-fav-btn.active { color: #d4a851; }
+
   .forum-post-item {
     cursor: pointer;
+    border-radius: 0 !important;
+    background: #faf6ef !important;
     transition: box-shadow 0.15s;
   }
-  .forum-post-item:hover { box-shadow: 0 2px 12px rgba(118,75,162,0.14); }
+  .forum-post-item:hover { box-shadow: 0 2px 12px rgba(100,72,20,0.14); }
   .forum-post-title { font-weight: 600; font-size: 0.97rem; margin-bottom: 5px; }
-  .forum-post-meta  { font-size: 0.78rem; color: #999; display: flex; align-items: center; flex-wrap: wrap; }
+  .forum-post-meta  { font-size: 0.78rem; color: #666; display: flex; align-items: center; flex-wrap: wrap; }
 
   .forum-empty-state {
     text-align: center;
@@ -2694,7 +2029,6 @@
 
   .forum-comments-header { font-weight: 700; font-size: 1rem; color: #555; }
 
-  .forum-comment-card { }
   .forum-comment-header {
     display: flex;
     align-items: center;
@@ -2707,20 +2041,354 @@
 
   .forum-comment-votes { display: flex; align-items: center; gap: 8px; }
 
+  .forum-comment-card { border-radius: 0 !important; background: #faf6ef !important; }
+
   .forum-vote-btn {
     display: inline-flex;
     align-items: center;
     gap: 4px;
     padding: 3px 10px;
-    border: 1px solid #ddd;
-    border-radius: 20px;
+    border: 1px solid #d4c0a0;
+    border-radius: 0;
     background: transparent;
     cursor: pointer;
     font-size: 0.82rem;
     color: #888;
     transition: background 0.15s, border-color 0.15s, color 0.15s;
   }
-  .forum-vote-btn:hover { background: #f0f0f0; }
+  .forum-vote-btn:hover { background: #f0e8d8; }
   .forum-vote-up.active  { border-color: #43a047; background: #e8f5e9; color: #2e7d32; }
   .forum-vote-down.active{ border-color: #e53935; background: #ffebee; color: #c62828; }
+
+  /* Forum user avatar */
+  .forum-user-avatar { width: 16px; height: 16px; border-radius: 50%; object-fit: cover; vertical-align: middle; margin-right: 4px; }
+
+  .forum-comment-own-actions { margin-left: auto; display: flex; gap: 2px; }
+  .forum-comment-header { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; margin-bottom: 4px; }
+
+  /* ── Desktop navigation ── */
+  .desktop-nav {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding-right: 14px;
+  }
+
+  .desktop-nav-btn {
+    color: #d4cbbf !important;
+    font-size: 0.88rem !important;
+    letter-spacing: 0.02em;
+    text-transform: none !important;
+    min-width: unset !important;
+  }
+
+  .desktop-nav-btn:hover { color: #d4a851 !important; }
+
+  .desktop-nav-active { color: #d4a851 !important; border-bottom: 2px solid #d4a851; border-radius: 0 !important; }
+
+  .desktop-nav-username {
+    color: #d4a851;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0 8px;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .desktop-nav-login { margin-left: 4px; border-radius: 0 !important; }
+
+  .riki-arrow {
+    font-size: 0.7rem;
+    opacity: 0.75;
+    margin-left: 3px;
+    line-height: 1;
+  }
+
+  .tools-dropdown {
+    background: #1c1c1c !important;
+    border: 1px solid #8B6E43;
+    border-radius: 0 !important;
+    min-width: 210px;
+  }
+
+  .tools-dropdown .v-list-item-title { color: #d4cbbf; font-size: 0.88rem; }
+  .tools-dropdown .v-list-item__prepend .v-icon { color: #8B6E43 !important; }
+  .tools-dropdown .v-list-item:hover > .v-list-item__overlay { opacity: 0.12; background: #8B6E43; }
+  .tools-dropdown .v-list-item--active > .v-list-item__overlay { background: #8B6E43; opacity: 0.25; }
+
+  /* Mobile-only burger, hidden on desktop */
+  .nav-burger-btn { display: none !important; }
+
+  @media (max-width: 768px) {
+    .desktop-nav { display: none; }
+    .nav-burger-btn { display: inline-flex !important; }
+  }
+
+  /* ── Burger icon (3 lines) ── */
+  .burger-icon {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 22px;
+    height: 22px;
+  }
+
+  .burger-icon span {
+    display: block;
+    height: 2px;
+    width: 100%;
+    background: #d4a851;
+    border-radius: 1px;
+  }
+
+  /* ── Mobile drawer covers full height (over header) ── */
+  .nav-drawer { z-index: 1200 !important; top: 0 !important; height: 100% !important; }
+
+  /* ── Mobile overlay behind drawer ── */
+  .mobile-nav-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 1100;
+  }
+  @media (max-width: 768px) {
+    .mobile-nav-overlay { display: block; }
+  }
+
+  /* ── Mobile: horizontal-scroll card row ── */
+  @media (max-width: 599px) {
+    .home-cards-row {
+      flex-wrap: nowrap !important;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 12px;
+      gap: 0;
+    }
+    .home-card-col {
+      flex: 0 0 82vw !important;
+      max-width: 82vw !important;
+      width: 82vw !important;
+      scroll-snap-align: center;
+    }
+  }
+
+  /* ── CSS theme toggle icons ── */
+  .theme-toggle-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    transition: background 0.2s;
+    padding: 0;
+  }
+  .theme-toggle-btn:hover { background: rgba(212,168,81,0.12); }
+
+  /* Crescent moon: gold circle with a "bite" matching the header background */
+  .theme-moon {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #d4a851;
+    box-shadow: -5px 3px 0 0 #1c1c1c;
+  }
+
+  /* Sun: glowing gold circle */
+  .theme-sun {
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: #d4a851;
+    box-shadow:
+      0 0 0 2px rgba(212,168,81,0.25),
+      0 -8px 0 -3px #d4a851,
+      0  8px 0 -3px #d4a851,
+      -8px 0 0 -3px #d4a851,
+       8px 0 0 -3px #d4a851,
+      -6px -6px 0 -3.5px #d4a851,
+       6px -6px 0 -3.5px #d4a851,
+      -6px  6px 0 -3.5px #d4a851,
+       6px  6px 0 -3.5px #d4a851;
+  }
+
+  /* Drawer icon: slightly larger, with left margin matching prepend slot */
+  .theme-icon-drawer {
+    margin-right: 20px;
+    margin-left: 4px;
+  }
+
+  .lang-flag {
+    font-size: 1.1rem;
+    line-height: 1;
+    margin-right: 10px;
+  }
+  .lang-flag-drawer {
+    margin-right: 20px;
+    margin-left: 4px;
+    font-size: 1.2rem;
+  }
+
+  /* ── Profile / Avatar ── */
+  .nav-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; vertical-align: middle; margin-right: 4px; }
+  .nav-avatar-initials { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: #8B6E43; color: #fff; font-size: 11px; font-weight: 700; vertical-align: middle; margin-right: 4px; }
+  .profile-avatar-wrap { position: relative; display: inline-block; }
+  .profile-avatar-img { width: 96px; height: 96px; border-radius: 50%; object-fit: cover; display: block; margin: 0 auto; }
+  .profile-avatar-placeholder { width: 96px; height: 96px; border-radius: 50%; background: #8B6E43; color: #fff; font-size: 2.2rem; font-weight: 700; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+  .profile-avatar-edit { position: absolute; bottom: 2px; right: 2px; background: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,.2); }
+</style>
+
+<!-- Non-scoped: dark mode overrides keyed off Vuetify's own .v-theme--dark class,
+     which the v-app root element reliably carries when dark mode is active. -->
+<style lang="css">
+  #simple-app.v-theme--dark,
+  #simple-app.v-theme--dark .v-main {
+    background-color: #1a1816 !important;
+    background-image: none !important;
+    color: #e0d8cc !important;
+  }
+
+  /* App-level background */
+  .v-theme--dark .v-application__wrap { background-color: #1a1816; }
+
+  /* Typography */
+  .v-theme--dark .site-title  { color: #e0d8cc !important; }
+  .v-theme--dark .hero-section { background-color: #201e1a !important; border-bottom-color: #3a3020 !important; }
+  .v-theme--dark .hero-section p { color: #9a8878; }
+
+  /* Generic sections / cards */
+  .v-theme--dark .site-section  { background-color: #252220 !important; }
+  .v-theme--dark .description   { background-color: #252220 !important; }
+  .v-theme--dark .card          { background-color: #252220 !important; color: #e0d8cc !important; border-color: #6b4f2a !important; }
+  .v-theme--dark .card-in-card  { background-color: #2e2a26 !important; color: #e0d8cc !important; }
+  .v-theme--dark .card-in-card h3 { color: #e0d8cc; }
+  .v-theme--dark #pomodoro-card,
+  .v-theme--dark #task-card,
+  .v-theme--dark #eisenhower-card,
+  .v-theme--dark #calendar-card { background-color: #252220 !important; color: #e0d8cc !important; }
+  .v-theme--dark .feature-card  { background-color: #252220 !important; border-color: #3a3020 !important; color: #e0d8cc; }
+  .v-theme--dark .contact-info,
+  .v-theme--dark .contact-form  { background-color: #252220 !important; color: #e0d8cc; }
+  .v-theme--dark .about-section { background-color: #252220 !important; }
+
+  /* Contact form inputs have a hardcoded light background in scoped CSS — override it */
+  .v-theme--dark .contact-form .v-text-field,
+  .v-theme--dark .contact-form .v-textarea { background-color: transparent !important; }
+
+  /* Pomodoro */
+  .v-theme--dark .pomo-tasks-card   { background: #252220 !important; }
+  .v-theme--dark .pomo-tasks-title  { color: #9a8878 !important; }
+  .v-theme--dark .pomo-task-name    { color: #e0d8cc !important; }
+  .v-theme--dark .pomo-task-row:hover     { background: #2e2a26 !important; }
+  .v-theme--dark .pomo-task-focused       { background: #2e2a26 !important; }
+  .v-theme--dark .pomo-queue-row:hover    { background: #2e2a26 !important; }
+  .v-theme--dark .pomo-queue-active       { background: #2e2a26 !important; }
+  .v-theme--dark .pomo-queue-total  { border-top-color: #3a3020 !important; color: #9a8878 !important; }
+  .v-theme--dark .pomo-queue-dur    { color: #9a8878 !important; }
+  .v-theme--dark .pomo-empty        { color: #6a5a4a !important; }
+
+  /* Taskboard */
+  .v-theme--dark .board-title          { color: #e0d8cc !important; }
+  .v-theme--dark .trello-column        { background: #2a2520 !important; border-color: #3a3020 !important; }
+  .v-theme--dark .trello-col-header    { background: #201e18 !important; }
+  .v-theme--dark .trello-col-name      { color: #e0d8cc !important; }
+  .v-theme--dark .trello-col-desc      { color: #9a8878 !important; }
+  .v-theme--dark .trello-col-time      { color: #5a5040 !important; }
+  .v-theme--dark .trello-task-card     { background: #252220 !important; }
+  .v-theme--dark .trello-task-title    { color: #e0d8cc !important; }
+  .v-theme--dark .trello-task-desc     { color: #9a8878 !important; }
+  .v-theme--dark .trello-empty         { color: #4a4030 !important; }
+  .v-theme--dark .trello-empty-hint    { color: #3a3020 !important; }
+  .v-theme--dark .trello-add-col       { border-color: #3a3020 !important; color: #6a5a4a !important; }
+  .v-theme--dark .trello-add-col:hover { border-color: #8B6E43 !important; color: #8B6E43 !important; }
+  .v-theme--dark .quick-add-btn        { color: #6a5a4a !important; }
+  .v-theme--dark .trello-column.drag-over { background: #2e2a26 !important; }
+
+  /* Eisenhower Matrix */
+  .v-theme--dark .mfree-canvas   { border-color: #6b5030 !important; }
+  .v-theme--dark .mfree-q-do     { background: rgba(180,60,40,0.12) !important; }
+  .v-theme--dark .mfree-q-schedule { background: rgba(70,140,60,0.10) !important; }
+  .v-theme--dark .mfree-q-delegate { background: rgba(190,120,40,0.10) !important; }
+  .v-theme--dark .mfree-q-eliminate { background: rgba(90,70,40,0.08) !important; }
+  .v-theme--dark .mfree-chip     { background: rgba(40,35,28,0.92) !important; border-color: #6b5030 !important; color: #e0d8cc !important; }
+
+  /* Calendar */
+  .v-theme--dark .cal-day-cell        { background: #252220 !important; border-color: #3a3020 !important; }
+  .v-theme--dark .cal-day-cell:hover  { background: #2e2a26 !important; }
+  .v-theme--dark .cal-other           { background: #1c1a18 !important; }
+  .v-theme--dark .cal-other:hover     { background: #1c1a18 !important; }
+  .v-theme--dark .cal-day-num         { color: #a09080 !important; }
+  .v-theme--dark .cal-other .cal-day-num { color: #4a4a4a !important; }
+  .v-theme--dark .task-pool           { background: #201e18 !important; border-color: #3a3020 !important; }
+  .v-theme--dark .pool-empty          { color: #5a5040 !important; }
+
+  /* Forum */
+  .v-theme--dark .forum-fav-btn        { color: #5a4a3a !important; }
+  .v-theme--dark .forum-fav-btn:hover  { color: #d4a851 !important; }
+  .v-theme--dark .forum-fav-btn.active { color: #d4a851 !important; }
+  .v-theme--dark .forum-subtitle      { color: #9a8878 !important; }
+  .v-theme--dark .forum-cat-card      { background: #252220 !important; }
+  .v-theme--dark .forum-cat-name      { color: #e0d8cc !important; }
+  .v-theme--dark .forum-cat-desc      { color: #9a8878 !important; }
+  .v-theme--dark .forum-post-item     { background: #252220 !important; }
+  .v-theme--dark .forum-post-title    { color: #e0d8cc !important; }
+  .v-theme--dark .forum-post-meta     { color: #6a5a4a !important; }
+  .v-theme--dark .forum-post-body     { color: #d0c8bc !important; }
+  .v-theme--dark .forum-post-detail-title { color: #e0d8cc !important; }
+  .v-theme--dark .forum-comment-card  { background: #252220 !important; }
+  .v-theme--dark .forum-comment-body  { color: #d0c8bc !important; }
+  .v-theme--dark .forum-comment-time  { color: #6a5a4a !important; }
+  .v-theme--dark .forum-comment-author { color: #e0d8cc !important; }
+  .v-theme--dark .forum-comments-header { color: #9a8878 !important; }
+  .v-theme--dark .forum-empty-state   { color: #6a5a4a !important; }
+  .v-theme--dark .forum-vote-btn      { border-color: #3a3020 !important; color: #9a8878 !important; }
+  .v-theme--dark .forum-vote-btn:hover { background: #2e2a26 !important; }
+  .v-theme--dark .forum-comment-form-label { color: #9a8878 !important; }
+
+  /* ── Admin badge ── */
+  .forum-admin-badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: #1565c0;
+    background: #e3f0ff;
+    border: 1px solid #90caf9;
+    border-radius: 3px;
+    padding: 0px 5px;
+    margin-left: 5px;
+    vertical-align: middle;
+    line-height: 1.6;
+  }
+
+  .v-theme--dark .forum-admin-badge {
+    color: #90caf9;
+    background: #0d2a4a;
+    border-color: #1565c0;
+  }
+
+  /* ── Admin nav button ── */
+  .admin-nav-btn { color: #2196f3 !important; font-weight: 700 !important; }
+  .admin-nav-btn:hover { color: #90caf9 !important; }
+
+  .admin-drawer-item .v-list-item-title { color: #90caf9 !important; }
+  .admin-drawer-item .v-list-item__prepend .v-icon { color: #2196f3 !important; }
+
+  /* ── Admin panel ── */
+  .admin-container { max-width: 900px !important; }
+
+  .admin-row { border-left: 3px solid #2196f3 !important; }
+
+  .admin-username { font-weight: 600; }
+  .admin-post-title { font-weight: 600; font-size: 0.95rem; }
+  .admin-comment-body { font-size: 0.9rem; white-space: pre-wrap; word-break: break-word; }
+
+  .v-theme--dark .admin-row { background: #1e2a38 !important; }
 </style>
