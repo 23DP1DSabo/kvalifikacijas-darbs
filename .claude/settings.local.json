@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(php artisan *)",
+      "Bash(composer require *)",
+      "Bash(grep -rn --include=\"*.php\" --include=\"*.vue\" --include=\"*.js\" -E \"^\\\\s*\\(//|#|/\\\\*|\\\\*\\)\" \"c:/Users/Daniello/Desktop/coding projects/gala-projekts/my-laravel-app/app\" \"c:/Users/Daniello/Desktop/coding projects/gala-projekts/my-laravel-app/routes\" \"c:/Users/Daniello/Desktop/coding projects/gala-projekts/my-laravel-app/resources/js\")"
+    ]
+  }
+}
