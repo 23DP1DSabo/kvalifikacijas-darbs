@@ -11,7 +11,7 @@
             </div>
           </div>
 
-          <!-- Axis + canvas -->
+          <!-- Axis and canvas -->
           <div class="mfree-wrap">
             <div class="mfree-y-label">{{ s.matrixUrgency }}</div>
 
@@ -61,7 +61,7 @@
             </div>
           </div>
 
-          <!-- Unassigned pool -->
+          <!-- Unassigned area -->
           <h3 class="mt-6 mb-3">{{ s.matrixUnassigned }}</h3>
           <div class="task-pool">
             <div v-if="unassignedTasks.length === 0" class="pool-empty">{{ s.matrixAllAssigned }}</div>
@@ -97,7 +97,7 @@ export default {
 
   data() {
     return {
-      dragging: null,   // { task, startClientX, startClientY, startXPos, startYPos, canvasW, canvasH, moved }
+      dragging: null,  
     }
   },
 
