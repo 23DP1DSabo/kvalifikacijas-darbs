@@ -5,7 +5,7 @@
         <v-card-text>
 
           <!-- Board toolbar -->
-          <div class="board-toolbar mb-4">
+          <div class="board-toolbar mb-2">
             <div class="d-flex align-center gap-2">
               <h2 class="board-title">{{ s.taskboardTitle }}</h2>
               <v-chip size="small" variant="tonal" color="primary">
@@ -22,12 +22,59 @@
                 density="compact"
                 clearable
                 hide-details
-                style="max-width:220px"
+                style="min-width:180px"
               ></v-text-field>
               <v-btn color="primary" variant="elevated" prepend-icon="mdi-plus" @click="openTaskDialog()">
                 {{ s.taskboardNewTask }}
               </v-btn>
             </div>
+          </div>
+
+          <!-- Filter row -->
+          <div class="d-flex align-center gap-2 flex-wrap mb-4">
+            <v-select
+              v-model="filterStatus"
+              :items="statusFilterItems"
+              :label="s.taskStatus"
+              variant="outlined"
+              density="compact"
+              hide-details
+              clearable
+              style="max-width:160px"
+            ></v-select>
+            <v-select
+              v-model="filterPriority"
+              :items="priorityFilterItems"
+              :label="s.taskPriority"
+              variant="outlined"
+              density="compact"
+              hide-details
+              clearable
+              style="max-width:160px"
+            ></v-select>
+            <v-text-field
+              v-model="filterDateFrom"
+              :label="s.taskFilterFrom"
+              type="date"
+              variant="outlined"
+              density="compact"
+              hide-details
+              clearable
+              style="max-width:190px"
+            ></v-text-field>
+            <v-text-field
+              v-model="filterDateTo"
+              :label="s.taskFilterTo"
+              type="date"
+              variant="outlined"
+              density="compact"
+              hide-details
+              clearable
+              style="max-width:190px"
+            ></v-text-field>
+            <v-btn v-if="hasActiveFilters" size="small" variant="text" color="error" @click="clearFilters">
+              {{ s.taskFilterClear }}
+            </v-btn>
           </div>
 
           <!-- Board -->
@@ -228,6 +275,10 @@ export default {
       collapsedColumns: [],
       dragOverColumn: null,
       boardFilter: '',
+      filterStatus: '',
+      filterPriority: '',
+      filterDateFrom: '',
+      filterDateTo: '',
       quickAddCol: null,
       quickAddTitle: '',
       draggedTaskId: null,
@@ -238,17 +289,49 @@ export default {
     }
   },
 
+  computed: {
+    hasActiveFilters() {
+      return !!(this.boardFilter || this.filterStatus || this.filterPriority || this.filterDateFrom || this.filterDateTo)
+    },
+    statusFilterItems() {
+      return [
+        { title: this.s.statusPending,    value: 'pending' },
+        { title: this.s.statusInProgress, value: 'in_progress' },
+        { title: this.s.statusDone,       value: 'completed' },
+      ]
+    },
+    priorityFilterItems() {
+      return [
+        { title: this.s.taskboardPriHigh, value: 'high' },
+        { title: this.s.taskboardPriMed,  value: 'medium' },
+        { title: this.s.taskboardPriLow,  value: 'low' },
+        { title: this.s.priNone,          value: 'none' },
+      ]
+    },
+  },
+
   methods: {
     tasksByColumn(columnId) {
       return this.tasks.filter(t => {
         if ((t.columnId || 'default') !== columnId) return false
         if (this.boardFilter) {
           const q = this.boardFilter.toLowerCase()
-          return t.title.toLowerCase().includes(q) ||
-                 (t.description || '').toLowerCase().includes(q)
+          if (!t.title.toLowerCase().includes(q) && !(t.description || '').toLowerCase().includes(q)) return false
         }
+        if (this.filterStatus && t.status !== this.filterStatus) return false
+        if (this.filterPriority && (t.priority || 'none') !== this.filterPriority) return false
+        if (this.filterDateFrom && t.created_at && t.created_at.slice(0, 10) < this.filterDateFrom) return false
+        if (this.filterDateTo   && t.created_at && t.created_at.slice(0, 10) > this.filterDateTo)   return false
         return true
       })
+    },
+
+    clearFilters() {
+      this.boardFilter    = ''
+      this.filterStatus   = ''
+      this.filterPriority = ''
+      this.filterDateFrom = ''
+      this.filterDateTo   = ''
     },
 
     async quickAddTask(columnId) {

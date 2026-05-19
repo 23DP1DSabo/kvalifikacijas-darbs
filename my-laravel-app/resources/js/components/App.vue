@@ -605,6 +605,7 @@
           taskTitle:'Nosaukums', taskDesc:'Apraksts', taskStatus:'Statuss', taskPriority:'Prioritāte',
           taskDueDate:'Izpildes datums', taskPomodoros:'Paredzamie pomodori',
           taskDelete:'Dzēst', taskCancel:'Atcelt', taskSave:'Saglabāt',
+          taskFilterFrom:'Izveidots pēc', taskFilterTo:'Izveidots pirms', taskFilterClear:'Notīrīt filtrus',
           colDialogTitle:'Jauna kolonna', colName:'Nosaukums', colDesc:'Apraksts',
           colCreated:'Izveidošanas datums', colColor:'Kolonnas krāsa',
           colCancel:'Atcelt', colCreate:'Izveidot',
@@ -719,6 +720,7 @@
           taskTitle:'Title', taskDesc:'Description', taskStatus:'Status', taskPriority:'Priority',
           taskDueDate:'Due date', taskPomodoros:'Estimated pomodoros',
           taskDelete:'Delete', taskCancel:'Cancel', taskSave:'Save',
+          taskFilterFrom:'Created after', taskFilterTo:'Created before', taskFilterClear:'Clear filters',
           colDialogTitle:'New column', colName:'Name', colDesc:'Description',
           colCreated:'Created date', colColor:'Column colour',
           colCancel:'Cancel', colCreate:'Create',
@@ -1094,6 +1096,7 @@
             columnId:       t.column_id ?? defaultId,
             est_pomodoros:  t.est_pomodoros  ?? 1,
             done_pomodoros: t.done_pomodoros ?? 0,
+            created_at:     t.created_at,
           }))
           this.tasks.splice(0, this.tasks.length, ...mappedTasks)
         } catch {
@@ -1982,7 +1985,7 @@
     gap: 10px;
     align-items: center;
   }
-  .forum-search-field { flex: 1 1 200px; min-width: 160px; }
+  .forum-search-field { flex: 1 1 300px; min-width: 220px; }
   .forum-sort-btns { display: flex; gap: 6px; flex-wrap: wrap; }
 
   .forum-fav-btn {

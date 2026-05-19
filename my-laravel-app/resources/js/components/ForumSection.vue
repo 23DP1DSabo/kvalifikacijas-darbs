@@ -74,9 +74,8 @@
 
           <v-btn v-if="currentUser"
                  size="small"
-                 :variant="forumShowFavorites ? 'elevated' : 'tonal'"
-                 :color="forumShowFavorites ? 'warning' : undefined"
-                 prepend-icon="mdi-star"
+                 :variant="forumShowFavorites ? 'elevated' : 'outlined'"
+                 color="warning"
                  @click="forumShowFavorites = !forumShowFavorites">{{ s.forumFavorites }}</v-btn>
         </div>
 
