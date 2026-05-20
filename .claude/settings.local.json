@@ -6,7 +6,8 @@
       "Bash(composer require *)",
       "Bash(grep -rn --include=\"*.php\" --include=\"*.vue\" --include=\"*.js\" -E \"^\\\\s*\\(//|#|/\\\\*|\\\\*\\)\" \"c:/Users/Daniello/Desktop/coding projects/gala-projekts/my-laravel-app/app\" \"c:/Users/Daniello/Desktop/coding projects/gala-projekts/my-laravel-app/routes\" \"c:/Users/Daniello/Desktop/coding projects/gala-projekts/my-laravel-app/resources/js\")",
       "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\Daniello\\\\Desktop\\\\coding projects\\\\gala-projekts\\\\my-laravel-app\" -Recurse -Force)",
-      "Bash(Select-Object -ExpandProperty FullName)"
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(Get-Content storage\\\\logs\\\\laravel.log -Tail 40)"
     ]
   }
 }
