@@ -13,7 +13,7 @@
                 <button class="pomo-mode-btn" :class="{ active: pomodoroMode === 'cycle' }" @click="setMode('cycle')">{{ s.pomoCycle }}</button>
                 <button class="pomo-mode-btn" :class="{ active: pomodoroMode === 'queue' }" @click="setMode('queue')">{{ s.pomoSession }}</button>
               </div>
-              <button class="pomo-gear-btn" @click="showPomodoroSettings = true" title="Iestatījumi">
+              <button class="pomo-gear-btn" @click="showPomodoroSettings = true" :title="s.pomoSettingsTitle">
                 <v-icon size="20">mdi-cog-outline</v-icon>
               </button>
             </div>
@@ -92,7 +92,7 @@
               <div v-for="task in tasks" :key="task.id"
                    class="pomo-task-row"
                    :class="{ 'pomo-task-focused': focusedTaskId === task.id, 'pomo-task-done': task.status === 'completed' }">
-                <v-btn icon size="x-small" variant="text"
+                <v-btn icon size="x-small" variant="text" color="primary"
                        :aria-label="focusedTaskId === task.id ? s.pomoUnfocusTask : s.pomoFocusTask"
                        @click="focusedTaskId = (focusedTaskId === task.id ? null : task.id)">
                   <v-icon size="18">{{ focusedTaskId === task.id ? 'mdi-radiobox-marked' : 'mdi-radiobox-blank' }}</v-icon>
@@ -135,10 +135,10 @@
                 </v-icon>
                 <span class="pomo-queue-label">{{ block.label }}</span>
                 <span class="pomo-queue-dur">{{ block.minutes }}min</span>
-                <v-btn icon size="x-small" variant="text" :disabled="idx === 0" :aria-label="s.pomoMoveUp" @click="moveQueueBlock(idx, -1)">
+                <v-btn icon size="x-small" variant="text" color="primary" :disabled="idx === 0" :aria-label="s.pomoMoveUp" @click="moveQueueBlock(idx, -1)">
                   <v-icon size="14">mdi-arrow-up</v-icon>
                 </v-btn>
-                <v-btn icon size="x-small" variant="text" :disabled="idx === sessionQueue.length - 1" :aria-label="s.pomoMoveDown" @click="moveQueueBlock(idx, 1)">
+                <v-btn icon size="x-small" variant="text" color="primary" :disabled="idx === sessionQueue.length - 1" :aria-label="s.pomoMoveDown" @click="moveQueueBlock(idx, 1)">
                   <v-icon size="14">mdi-arrow-down</v-icon>
                 </v-btn>
                 <v-btn icon size="x-small" variant="text" color="error" :aria-label="s.pomoRemoveBlock" @click="removeQueueBlock(idx)">
@@ -296,10 +296,10 @@ export default {
             this.pomodoroTime = this.currentQueueBlock.minutes * 60
             this.currentPhase = this.currentQueueBlock.type
             if (this.currentQueueBlock.taskId) this.focusedTaskId = this.currentQueueBlock.taskId
-            this.notify(this.currentPhase === 'work' ? 'Darba bloks sākas!' : 'Pauze sākas!')
+            this.notify(this.currentPhase === 'work' ? this.s.pomoNotifyWorkBlock : this.s.pomoNotifyBreak)
             if (this.pomodoroAutoStart) this.startPomodoro()
           } else {
-            this.notify('Sesija pabeigta!')
+            this.notify(this.s.pomoNotifySessionDone)
           }
         } else {
           if (this.currentPhase === 'work') {
@@ -309,11 +309,11 @@ export default {
             const next = this.cyclesCompleted % 4 === 0 ? 'longBreak' : 'break'
             this.currentPhase  = next
             this.pomodoroTime  = next === 'longBreak' ? this.longBreakDuration : this.shortBreakDuration
-            this.notify(next === 'longBreak' ? 'Garā pauze sākas!' : 'Īsā pauze sākas!')
+            this.notify(next === 'longBreak' ? this.s.pomoNotifyLongBreak : this.s.pomoNotifyShortBreak)
           } else {
             this.currentPhase = 'work'
             this.pomodoroTime = this.pomodoroDuration
-            this.notify('Darba sesija sākas!')
+            this.notify(this.s.pomoNotifyWorkStart)
           }
           if (this.pomodoroAutoStart) this.startPomodoro()
         }
@@ -396,7 +396,7 @@ export default {
 
     addQueueBlock() {
       if (!this.queueForm.minutes || this.queueForm.minutes < 1) return
-      const labels = { work: 'Darbs', break: 'Īsā pauze', longBreak: 'Garā pauze' }
+      const labels = { work: this.s.pomoWork, break: this.s.pomoShortBreak, longBreak: this.s.pomoLongBreak }
       const linkedTask = this.queueForm.taskId ? this.tasks.find(t => t.id === this.queueForm.taskId) : null
       this.sessionQueue.push({
         id:      Date.now(),

@@ -10,14 +10,14 @@
 
           <div class="cal-nav">
             <div class="cal-nav-group">
-              <v-btn icon variant="text" size="small" :aria-label="s.calPrevMonth" @click="changeMonth(-1)"><v-icon>mdi-chevron-left</v-icon></v-btn>
+              <v-btn icon variant="text" size="small" color="primary" :aria-label="s.calPrevMonth" @click="changeMonth(-1)"><v-icon>mdi-chevron-left</v-icon></v-btn>
               <span class="cal-month-label" aria-live="polite">{{ calMonthName }}</span>
-              <v-btn icon variant="text" size="small" :aria-label="s.calNextMonth" @click="changeMonth(1)"><v-icon>mdi-chevron-right</v-icon></v-btn>
+              <v-btn icon variant="text" size="small" color="primary" :aria-label="s.calNextMonth" @click="changeMonth(1)"><v-icon>mdi-chevron-right</v-icon></v-btn>
             </div>
             <div class="cal-nav-group">
-              <v-btn icon variant="text" size="small" :aria-label="s.calPrevYear" @click="changeYear(-1)"><v-icon>mdi-chevron-left</v-icon></v-btn>
+              <v-btn icon variant="text" size="small" color="primary" :aria-label="s.calPrevYear" @click="changeYear(-1)"><v-icon>mdi-chevron-left</v-icon></v-btn>
               <span class="cal-year-label">{{ calendarYear }}</span>
-              <v-btn icon variant="text" size="small" :aria-label="s.calNextYear" @click="changeYear(1)"><v-icon>mdi-chevron-right</v-icon></v-btn>
+              <v-btn icon variant="text" size="small" color="primary" :aria-label="s.calNextYear" @click="changeYear(1)"><v-icon>mdi-chevron-right</v-icon></v-btn>
             </div>
             <v-btn size="x-small" variant="tonal" @click="goToToday">{{ s.calToday }}</v-btn>
           </div>
@@ -161,7 +161,7 @@ export default {
           const res = await apiFetch(`/api/tasks/${id}`, { method: 'PUT', body: JSON.stringify({ due_date: dateStr }) })
           if (!res.ok) throw new Error()
         } catch {
-          this.$emit('snackbar', 'Neizdevās saglabāt kalendāra izmaiņas..')
+          this.$emit('snackbar', this.s.errSaveCalendar)
         }
       }
     },

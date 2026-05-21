@@ -14,21 +14,21 @@
         <v-menu v-model="toolsMenuOpen" :close-on-content-click="true" location="bottom start">
           <template v-slot:activator="{ props }">
             <v-btn variant="text" class="desktop-nav-btn" v-bind="props">
-              Rīki <span class="riki-arrow">{{ toolsMenuOpen ? '▴' : '▾' }}</span>
+              {{ s.navTools }} <span class="riki-arrow">{{ toolsMenuOpen ? '▴' : '▾' }}</span>
             </v-btn>
           </template>
           <v-list class="tools-dropdown" density="compact">
             <v-list-item prepend-icon="mdi-timer" @click="currentPage = 'pomodoro'" :active="currentPage === 'pomodoro'">
-              <v-list-item-title>Pomodoro</v-list-item-title>
+              <v-list-item-title>{{ s.toolPomodoro }}</v-list-item-title>
             </v-list-item>
             <v-list-item prepend-icon="mdi-grid" @click="currentPage = 'matrix'" :active="currentPage === 'matrix'">
-              <v-list-item-title>Eizenhauera Matrica</v-list-item-title>
+              <v-list-item-title>{{ s.toolMatrix }}</v-list-item-title>
             </v-list-item>
             <v-list-item prepend-icon="mdi-calendar" @click="currentPage = 'calendar'" :active="currentPage === 'calendar'">
-              <v-list-item-title>Kalendārs</v-list-item-title>
+              <v-list-item-title>{{ s.toolCalendar }}</v-list-item-title>
             </v-list-item>
             <v-list-item prepend-icon="mdi-format-list-checks" @click="currentPage = 'taskboard'" :active="currentPage === 'taskboard'">
-              <v-list-item-title>Uzdevumu Pārvaldnieks</v-list-item-title>
+              <v-list-item-title>{{ s.toolTaskboard }}</v-list-item-title>
             </v-list-item>
           </v-list>
         </v-menu>
@@ -175,15 +175,15 @@
     <v-main v-if="currentPage === 'home'" class="main-content">
       <v-container fluid class="hero-section">
         <h1 class="site-title">{{ s.homeTitle }}</h1>
-        <p>Tavs sākums produktīvai profesionālajai izaugsmei!</p>
+        <p>{{ s.homeTagline }}</p>
       </v-container>
 
       <v-container fluid class="py-8">
         <v-card class="description site-section">
           <v-card-text>
-            <p>Mūsdienās, pateicoties tehnoloģiju straujai attīstībai, cilvēki arvien biežāk saskaras ar situācijām kad ir nepieciešams veikt vairākus darbus īsā laika sprīdī, neatkarīgi no tā vai tas notiek izglītības vai karjeras izaugsmē. Studenti, skolotāji, lietveži, darba vadītāji un daudzu citu nozaru cilvēki bieži vien var būt pārslogoti un pārņemti gan ar fizisku, gan ar mentālu darbu, tādā veidā iekavējot vai pavirši izpildot tos. Pats esmu novērojis prokrastināciju (darbu atlikšanu līdz pēdējam brīdim) kā rezultātu no šīs problēmas vienaudžu vidū savā kursā, draugu lokā un sociālajos tīklos, cilvēkiem daloties ar pieredzi.  </p>
+            <p>{{ s.homeDesc1 }}</p>
             <br>
-            <p>Mūsu uzdevums ir izveidot platformu, kas sniedz lietotājam uzreiz vairākas metodes sava darbalaika plānošanai un organizēšanai, lai izvairītos no prokrastinācijas, izdeguma un citiem pārslodzes rezultātiem. Šobrīd neesmu atradis vietni, kas atbilstu šādām prasībām, tāpēc liecinu ka tādas platformas izveide ir lietderīga un aktuāla. Ar tās palīdzību cilvēki spēs ne tikai, attīstīt savas administratīvās prasmes un veikt vairāk darba īsākā laika sprīdī, bet arī cerams pašizglītoties šajā jomā no citiem un palīdzēt citiem ar līdzīgiem trūkumiem. Datu bāzē tiks glabāta informācija par tādiem elementiem kā lietotāji, forumi, publicējumi, komentāri un pulkstenis, matrica, kalendārs, uzdevumi, uzdevumu dēlis. </p>
+            <p>{{ s.homeDesc2 }}</p>
           </v-card-text>
         </v-card>
       </v-container>
@@ -491,6 +491,7 @@
       return {
         imgPomodoro, imgKanban, imgMatrix, imgCalendar,
         currentPage: window.pageData?.currentPage || 'home',
+        _historyNav: false,
         pageTitle: window.pageData?.title || 'Homepage',
         navDrawer: false,
         toolsMenuOpen: false,
@@ -618,6 +619,7 @@
           regConfirm:'Apstiprināt paroli', regSubmit:'Reģistrēties',
           regHasAccount:'Jau ir konts?', regLogin:'Pieslēgties',
           back:'Atpakaļ', newTask:'+ Jauns uzdevums',
+          defaultColName:'Iesūtne', defaultColDesc:'Noklusējuma kolonna',
           colCreatedDate: (d) => new Date(d || Date.now()).toLocaleDateString('lv-LV'),
           skipToContent:'Pāriet uz saturu',
           calPrevMonth:'Iepriekšējais mēnesis', calNextMonth:'Nākamais mēnesis', calPrevYear:'Iepriekšējais gads', calNextYear:'Nākamais gads', calToday:'Šodien',
@@ -652,6 +654,46 @@
           adminNoResults: 'Nav rezultātu.',
           adminInPost: 'Ierakstā',
           adminCategories: 'Kategorijas', adminAddCategory: 'Pievienot kategoriju', adminEditCategory: 'Rediģēt kategoriju', adminEdit: 'Rediģēt',
+          adminSave: 'Saglabāt',
+          adminCatSlug: 'Slug', adminCatSlugHint: 'URL-drošs identifikators, piem. diskusija-1',
+          adminCatIcon: 'Ikona (mdi-*)', adminCatIconHint: 'piem. mdi-chat-outline',
+          homeTagline: 'Tavs sākums produktīvai profesionālajai izaugsmei!',
+          homeDesc1: 'Mūsdienās, pateicoties tehnoloģiju straujai attīstībai, cilvēki arvien biežāk saskaras ar situācijām kad ir nepieciešams veikt vairākus darbus īsā laika sprīdī, neatkarīgi no tā vai tas notiek izglītības vai karjeras izaugsmē. Studenti, skolotāji, lietveži, darba vadītāji un daudzu citu nozaru cilvēki bieži vien var būt pārslogoti un pārņemti gan ar fizisku, gan ar mentālu darbu, tādā veidā iekavējot vai pavirši izpildot tos. Pats esmu novērojis prokrastināciju (darbu atlikšanu līdz pēdējam brīdim) kā rezultātu no šīs problēmas vienaudžu vidū savā kursā, draugu lokā un sociālajos tīklos, cilvēkiem daloties ar pieredzi.',
+          homeDesc2: 'Mūsu uzdevums ir izveidot platformu, kas sniedz lietotājam uzreiz vairākas metodes sava darbalaika plānošanai un organizēšanai, lai izvairītos no prokrastinācijas, izdeguma un citiem pārslodzes rezultātiem. Šobrīd neesmu atradis vietni, kas atbilstu šādām prasībām, tāpēc liecinu ka tādas platformas izveide ir lietderīga un aktuāla. Ar tās palīdzību cilvēki spēs ne tikai, attīstīt savas administratīvās prasmes un veikt vairāk darba īsākā laika sprīdī, bet arī cerams pašizglītoties šajā jomā no citiem un palīdzēt citiem ar līdzīgiem trūkumiem. Datu bāzē tiks glabāta informācija par tādiem elementiem kā lietotāji, forumi, publicējumi, komentāri un pulkstenis, matrica, kalendārs, uzdevumi, uzdevumu dēlis.',
+          aboutAuthorCredit: 'Projekta autors: Daniels Šabovičs DP3-1',
+          aboutProjectDesc: 'Projekts sniedz lietotājam uzreiz vairākas metodes sava darbalaika plānošanai un organizēšanai, lai izvairītos no prokrastinācijas, izdeguma un citiem pārslodzes rezultātiem. Šobrīd neesmu atradis vietni, kas atbilstu šādām prasībām, tāpēc liecinu ka tādas platformas izveide ir lietderīga un aktuāla. Ar tās palīdzību cilvēki spēs ne tikai, attīstīt savas administratīvās prasmes un veikt vairāk darba īsākā laika sprīdī, bet arī cerams pašizglītoties šajā jomā no citiem un palīdzēt citiem ar līdzīgiem trūkumiem. Datu bāzē tiks glabāta informācija par tādiem elementiem kā lietotāji, forumi, publicējumi, komentāri un pulkstenis, matrica, kalendārs, uzdevumi, uzdevumu dēlis.',
+          errServer: 'Servera kļūda. Mēģiniet vēlreiz.', errServerShort: 'Servera kļūda.', errGeneric: 'Kļūda.',
+          errLogin: 'Pieslēgšanās neizdevās.', errRegister: 'Reģistrācija neizdevās.',
+          errSaveTask: 'Neizdevās saglabāt uzdevumu. Mēģiniet vēlreiz.',
+          errDeleteTask: 'Neizdevās dzēst uzdevumu. Mēģiniet vēlreiz.',
+          errAddTask: 'Neizdevās pievienot uzdevumu. Mēģiniet vēlreiz.',
+          errSaveColumn: 'Neizdevās saglabāt kolonnu.',
+          errSavePhoto: 'Neizdevās saglabāt foto.',
+          errLoadData: 'Neizdevās ielādēt datus no servera.',
+          errSendMessage: 'Ziņojumu neizdevās nosūtīt. Mēģiniet vēlreiz.',
+          errLoadForumCats: 'Neizdevās ielādēt foruma kategorijas.',
+          errLoadPosts: 'Neizdevās ielādēt ierakstus.', errLoadPost: 'Neizdevās ielādēt ierakstu.',
+          errChangeFav: 'Neizdevās mainīt izlasi.',
+          errPublishPost: 'Neizdevās publicēt ierakstu. Mēģiniet vēlreiz.',
+          errPublishComment: 'Neizdevās publicēt komentāru. Mēģiniet vēlreiz.',
+          errVote: 'Neizdevās reģistrēt balsi. Mēģiniet vēlreiz.',
+          errSavePost: 'Neizdevās saglabāt ierakstu.', errDeletePost: 'Neizdevās dzēst ierakstu.',
+          errSaveComment: 'Neizdevās saglabāt komentāru.', errDeleteComment: 'Neizdevās dzēst komentāru.',
+          errLoadUsers: 'Neizdevās ielādēt lietotājus.',
+          errLoadComments: 'Neizdevās ielādēt komentārus.',
+          errBanStatus: 'Neizdevās mainīt bloķēšanas statusu.',
+          successPostDeleted: 'Ieraksts dzēsts.', successCommentDeleted: 'Komentārs dzēsts.',
+          errLoadCategories: 'Neizdevās ielādēt kategorijas.',
+          errSaveCategory: 'Neizdevās saglabāt kategoriju.', errDeleteCategory: 'Neizdevās dzēst kategoriju.',
+          errSaveMatrix: 'Neizdevās saglabāt matricas izmaiņas.',
+          errSaveCalendar: 'Neizdevās saglabāt kalendāra izmaiņas.',
+          pomoNotifyWorkBlock: 'Darba bloks sākas!', pomoNotifyBreak: 'Pauze sākas!',
+          pomoNotifySessionDone: 'Sesija pabeigta!', pomoNotifyLongBreak: 'Garā pauze sākas!',
+          pomoNotifyShortBreak: 'Īsā pauze sākas!', pomoNotifyWorkStart: 'Darba sesija sākas!',
+          timeJustNow: 'tikko',
+          timeMinAgo: (n) => `pirms ${n} min`,
+          timeHourAgo: (n) => `pirms ${n} h`,
+          timeDayAgo: (n) => `pirms ${n} d`,
         }
         const en = {
           navTools:'Tools', navForum:'Forum', navAbout:'About Us', navContact:'Contact',
@@ -660,7 +702,7 @@
           switchToEn:'Switch to English', switchToLv:'Switch to Latvian',
           toolPomodoro:'Pomodoro', toolMatrix:'Eisenhower Matrix',
           toolCalendar:'Calendar', toolTaskboard:'Task Manager',
-          homeTitle:'Home',
+          homeTitle:'TaskForge',
           card1Title:'Pomodoro Timer',      card1Desc:'Work and rest on a structured time schedule.',
           card2Title:'Goal Planner',        card2Desc:'Organise your long-term goals.',
           card3Title:'Eisenhower Matrix',   card3Desc:'Prioritise which goals to tackle first.',
@@ -733,6 +775,7 @@
           regConfirm:'Confirm password', regSubmit:'Register',
           regHasAccount:'Already have an account?', regLogin:'Log In',
           back:'Back', newTask:'+ New task',
+          defaultColName:'Inbox', defaultColDesc:'Default column',
           colCreatedDate: (d) => new Date(d || Date.now()).toLocaleDateString('en-US'),
           skipToContent:'Skip to content',
           calPrevMonth:'Previous month', calNextMonth:'Next month', calPrevYear:'Previous year', calNextYear:'Next year', calToday:'Today',
@@ -767,6 +810,46 @@
           adminNoResults: 'No results.',
           adminInPost: 'In post',
           adminCategories: 'Categories', adminAddCategory: 'Add category', adminEditCategory: 'Edit category', adminEdit: 'Edit',
+          adminSave: 'Save',
+          adminCatSlug: 'Slug', adminCatSlugHint: 'URL-safe identifier, e.g. general-chat',
+          adminCatIcon: 'Icon (mdi-*)', adminCatIconHint: 'e.g. mdi-chat-outline',
+          homeTagline: 'Your start for productive professional growth!',
+          homeDesc1: 'Nowadays, thanks to rapid technological development, people increasingly face situations where they need to perform multiple tasks in a short time, regardless of whether it\'s in education or career growth. Students, teachers, business people, managers, and people from many other fields are often overwhelmed and burdened by both physical and mental work, thereby delaying or carelessly completing them. I myself have observed procrastination (postponing work until the last minute) as a result of this problem among peers in my course, in my circle of friends, and on social media, with people sharing their experiences.',
+          homeDesc2: 'Our task is to create a platform that provides users with multiple methods for planning and organizing their work time at once, to avoid procrastination, burnout, and other effects of overload. Currently, I have not found a website that meets such requirements, so I believe that the creation of such a platform is useful and relevant. With its help, people will be able to not only develop their administrative skills and do more work in a shorter time, but also hopefully educate themselves in this field from others and help others with similar shortcomings. The database stores information about users, forums, posts, comments, timer, matrix, calendar, tasks, and task board.',
+          aboutAuthorCredit: 'Project author: Daniels Šabovičs DP3-1',
+          aboutProjectDesc: 'The project provides users with multiple methods for planning and organizing their work time, to avoid procrastination, burnout, and other effects of overload. No existing website meets such requirements, making this platform both useful and relevant. With its help, people can develop their administrative skills, do more work in less time, learn from others in this field, and help those facing similar challenges. The database stores information about users, forums, posts, comments, timer, matrix, calendar, tasks, and task board.',
+          errServer: 'Server error. Try again.', errServerShort: 'Server error.', errGeneric: 'Error.',
+          errLogin: 'Login failed.', errRegister: 'Registration failed.',
+          errSaveTask: 'Failed to save task. Try again.',
+          errDeleteTask: 'Failed to delete task. Try again.',
+          errAddTask: 'Failed to add task. Try again.',
+          errSaveColumn: 'Failed to save column.',
+          errSavePhoto: 'Failed to save photo.',
+          errLoadData: 'Failed to load data from server.',
+          errSendMessage: 'Failed to send message. Try again.',
+          errLoadForumCats: 'Failed to load forum categories.',
+          errLoadPosts: 'Failed to load posts.', errLoadPost: 'Failed to load post.',
+          errChangeFav: 'Failed to change favorites.',
+          errPublishPost: 'Failed to publish post. Try again.',
+          errPublishComment: 'Failed to publish comment. Try again.',
+          errVote: 'Failed to register vote. Try again.',
+          errSavePost: 'Failed to save post.', errDeletePost: 'Failed to delete post.',
+          errSaveComment: 'Failed to save comment.', errDeleteComment: 'Failed to delete comment.',
+          errLoadUsers: 'Failed to load users.',
+          errLoadComments: 'Failed to load comments.',
+          errBanStatus: 'Failed to change ban status.',
+          successPostDeleted: 'Post deleted.', successCommentDeleted: 'Comment deleted.',
+          errLoadCategories: 'Failed to load categories.',
+          errSaveCategory: 'Failed to save category.', errDeleteCategory: 'Failed to delete category.',
+          errSaveMatrix: 'Failed to save matrix changes.',
+          errSaveCalendar: 'Failed to save calendar changes.',
+          pomoNotifyWorkBlock: 'Work block starts!', pomoNotifyBreak: 'Break starts!',
+          pomoNotifySessionDone: 'Session complete!', pomoNotifyLongBreak: 'Long break starts!',
+          pomoNotifyShortBreak: 'Short break starts!', pomoNotifyWorkStart: 'Work session starts!',
+          timeJustNow: 'just now',
+          timeMinAgo: (n) => `${n} min ago`,
+          timeHourAgo: (n) => `${n} h ago`,
+          timeDayAgo: (n) => `${n} d ago`,
         }
         return this.language === 'en' ? en : lv
       },
@@ -789,6 +872,12 @@
     },
 
     watch: {
+      currentPage(val) {
+        if (!this._historyNav) {
+          window.history.pushState({ page: val }, '', '/')
+        }
+        this._historyNav = false
+      },
       tasks: {
         deep: true,
         handler(val) {
@@ -842,14 +931,14 @@
           })
           const data = await res.json()
           if (!res.ok) {
-            this.authError = data.errors?.email?.[0] || data.message || 'Pieslēgšanās neizdevās.'
+            this.authError = data.errors?.email?.[0] || data.message || this.s.errLogin
             return
           }
           this.currentUser = data.user
           this.loginForm = { email: '', password: '' }
           this.showLoginWindow = false
         } catch {
-          this.authError = 'Servera kļūda. Mēģiniet vēlreiz.'
+          this.authError = this.s.errServer
         } finally {
           this.authLoading = false
         }
@@ -868,14 +957,14 @@
           const data = await res.json()
           if (!res.ok) {
             const errors = data.errors || {}
-            this.authError = Object.values(errors).flat()[0] || data.message || 'Reģistrācija neizdevās.'
+            this.authError = Object.values(errors).flat()[0] || data.message || this.s.errRegister
             return
           }
           this.currentUser = data.user
           this.registerForm = { username: '', name: '', surname: '', email: '', password: '', password_confirmation: '' }
           this.showRegisterWindow = false
         } catch {
-          this.authError = 'Servera kļūda. Mēģiniet vēlreiz.'
+          this.authError = this.s.errServer
         } finally {
           this.authLoading = false
         }
@@ -921,7 +1010,7 @@
           }
           this.showTaskDialog = false
         } catch {
-          this.showSnackbar('Neizdevās saglabāt uzdevumu. Mēģiniet vēlreiz.')
+          this.showSnackbar(this.s.errSaveTask)
         }
       },
 
@@ -935,7 +1024,7 @@
           const delIdx = this.tasks.findIndex(t => t.id === id)
           if (delIdx !== -1) this.tasks.splice(delIdx, 1)
         } catch {
-          this.showSnackbar('Neizdevās dzēst uzdevumu. Mēģiniet vēlreiz.')
+          this.showSnackbar(this.s.errDeleteTask)
         }
       },
 
@@ -985,7 +1074,7 @@
         })
         this.currentUser = null
         const localTasks = JSON.parse(localStorage.getItem('tf_tasks') || '[]')
-        const localCols  = JSON.parse(localStorage.getItem('tf_columns') || 'null') || [{ id: 'default', name: 'Iesūtne', description: 'Noklusējuma kolonna', createdAt: new Date().toISOString() }]
+        const localCols  = JSON.parse(localStorage.getItem('tf_columns') || 'null') || [{ id: 'default', name: this.s.defaultColName, description: this.s.defaultColDesc, createdAt: new Date().toISOString() }]
         this.tasks.splice(0, this.tasks.length, ...localTasks)
         this.columns.splice(0, this.columns.length, ...localCols)
       },
@@ -1012,7 +1101,7 @@
           this.currentUser = { ...this.currentUser, avatar_url: data.avatar_url }
           this.showSnackbar(this.s.avatarSaved, 'success')
         } catch {
-          this.showSnackbar('Neizdevās saglabāt foto.')
+          this.showSnackbar(this.s.errSavePhoto)
         } finally {
           this.avatarUploading = false
         }
@@ -1028,13 +1117,13 @@
           })
           const data = await res.json()
           if (!res.ok) {
-            this.profileError = Object.values(data.errors || {}).flat()[0] || data.message || 'Kļūda.'
+            this.profileError = Object.values(data.errors || {}).flat()[0] || data.message || this.s.errGeneric
             return
           }
           this.currentUser = { ...this.currentUser, ...data.user }
           this.showSnackbar(this.s.profileSaved, 'success')
         } catch {
-          this.profileError = 'Servera kļūda.'
+          this.profileError = this.s.errServerShort
         } finally {
           this.profileSaving = false
         }
@@ -1050,13 +1139,13 @@
           })
           const data = await res.json()
           if (!res.ok) {
-            this.passwordError = Object.values(data.errors || {}).flat()[0] || data.message || 'Kļūda.'
+            this.passwordError = Object.values(data.errors || {}).flat()[0] || data.message || this.s.errGeneric
             return
           }
           this.passwordForm = { current_password: '', password: '', password_confirmation: '' }
           this.showSnackbar(this.s.profilePassSaved, 'success')
         } catch {
-          this.passwordError = 'Servera kļūda.'
+          this.passwordError = this.s.errServerShort
         } finally {
           this.passwordSaving = false
         }
@@ -1100,12 +1189,18 @@
           }))
           this.tasks.splice(0, this.tasks.length, ...mappedTasks)
         } catch {
-          this.showSnackbar('Neizdevās ielādēt datus no servera.')
+          this.showSnackbar(this.s.errLoadData)
         }
       },
     },
 
     async mounted() {
+      window.history.replaceState({ page: this.currentPage }, '', '/')
+      window.addEventListener('popstate', (e) => {
+        this._historyNav = true
+        this.currentPage = e.state?.page || 'home'
+      })
+
       const savedLang = localStorage.getItem('language')
       if (savedLang === 'en' || savedLang === 'lv') this.language = savedLang
 
@@ -1253,7 +1348,7 @@
     color: #1c1c1c;
   }
 
-  .main-content { display: block; height: auto; padding-top: 20px !important; }
+  .main-content { display: block; height: auto; }
 
   .site-section {
     padding: 20px;

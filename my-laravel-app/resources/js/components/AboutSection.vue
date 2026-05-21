@@ -12,7 +12,7 @@
             <v-card class="feature-card">
               <v-card-text>
                 <h3>{{ s.aboutAuthor }}</h3>
-                <p>Projekta autors: Daniels Šabovičs DP3-1</p>
+                <p>{{ s.aboutAuthorCredit }}</p>
               </v-card-text>
             </v-card>
           </v-col>
@@ -21,7 +21,7 @@
             <v-card class="feature-card">
               <v-card-text>
                 <h3>{{ s.aboutProject }}</h3>
-                <p>Projekts sniedz lietotājam uzreiz vairākas metodes sava darbalaika plānošanai un organizēšanai, lai izvairītos no prokrastinācijas, izdeguma un citiem pārslodzes rezultātiem. Šobrīd neesmu atradis vietni, kas atbilstu šādām prasībām, tāpēc liecinu ka tādas platformas izveide ir lietderīga un aktuāla. Ar tās palīdzību cilvēki spēs ne tikai, attīstīt savas administratīvās prasmes un veikt vairāk darba īsākā laika sprīdī, bet arī cerams pašizglītoties šajā jomā no citiem un palīdzēt citiem ar līdzīgiem trūkumiem. Datu bāzē tiks glabāta informācija par tādiem elementiem kā lietotāji, forumi, publicējumi, komentāri un pulkstenis, matrica, kalendārs, uzdevumi, uzdevumu dēlis. </p>
+                <p>{{ s.aboutProjectDesc }}</p>
               </v-card-text>
             </v-card>
           </v-col>

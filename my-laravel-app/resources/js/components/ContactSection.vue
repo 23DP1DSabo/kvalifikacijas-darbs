@@ -67,7 +67,7 @@ export default {
         this.contactSent = true
         this.contactForm = { name: '', email: '', message: '' }
       } catch {
-        this.$emit('snackbar', 'Ziņojumu neizdevās nosūtīt. Mēģiniet vēlreiz.')
+        this.$emit('snackbar', this.s.errSendMessage)
       } finally {
         this.contactLoading = false
       }

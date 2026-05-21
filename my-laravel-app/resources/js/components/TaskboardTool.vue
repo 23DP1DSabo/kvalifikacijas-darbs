@@ -108,7 +108,7 @@
                          :aria-label="collapsedColumns.includes(col.id) ? s.taskboardExpand : s.taskboardCollapse">
                     <v-icon size="14">{{ collapsedColumns.includes(col.id) ? 'mdi-chevron-down' : 'mdi-chevron-up' }}</v-icon>
                   </v-btn>
-                  <v-btn icon size="x-small" variant="text"
+                  <v-btn icon size="x-small" variant="text" color="primary"
                          :title="s.taskboardEditCol" :aria-label="s.taskboardEditCol"
                          @click="openEditColDialog(col)">
                     <v-icon size="14">mdi-pencil</v-icon>
@@ -145,7 +145,7 @@
                         </v-chip>
                         <span v-else></span>
                         <div class="task-actions">
-                          <v-btn icon size="x-small" variant="text" :title="s.taskboardEdit" :aria-label="s.taskboardEdit"
+                          <v-btn icon size="x-small" variant="text" color="primary" :title="s.taskboardEdit" :aria-label="s.taskboardEdit"
                                  @click.stop="openTaskDialog(task)">
                             <v-icon size="13">mdi-pencil</v-icon>
                           </v-btn>
@@ -346,7 +346,7 @@ export default {
           method: 'POST',
           body: JSON.stringify({ ...newTask, column_id: columnId }),
         })
-        if (!res.ok) { this.$emit('snackbar', 'Neizdevās pievienot uzdevumu. Mēģiniet vēlreiz.'); return }
+        if (!res.ok) { this.$emit('snackbar', this.s.errAddTask); return }
         const created = await res.json()
         this.tasks.push({ ...newTask, id: created.id })
       } else {
@@ -388,7 +388,8 @@ export default {
     },
 
     formatColDate(iso) {
-      return new Date(iso).toLocaleDateString('lv-LV', { day: 'numeric', month: 'short', year: 'numeric' })
+      const locale = this.s.calDays && this.s.calDays[0] === 'Mo' ? 'en-US' : 'lv-LV'
+      return new Date(iso).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' })
     },
 
     openEditColDialog(col) {
@@ -407,7 +408,7 @@ export default {
           })
           if (!res.ok) throw new Error()
         } catch {
-          this.$emit('snackbar', 'Neizdevās saglabāt kolonnu.')
+          this.$emit('snackbar', this.s.errSaveColumn)
           return
         }
       }

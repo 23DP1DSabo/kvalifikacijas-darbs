@@ -138,16 +138,16 @@
           </div>
         </v-card-title>
         <v-card-text class="pt-4">
-          <v-text-field v-model="catForm.name" label="Name" variant="outlined" density="compact" class="mb-3"></v-text-field>
-          <v-text-field v-model="catForm.slug" label="Slug" variant="outlined" density="compact" class="mb-3" hint="URL-safe identifier, e.g. general-chat"></v-text-field>
-          <v-textarea v-model="catForm.description" label="Description" variant="outlined" rows="2" class="mb-3" hide-details></v-textarea>
-          <v-text-field v-model="catForm.icon" label="Icon (mdi-*)" variant="outlined" density="compact" class="mb-3" hint="e.g. mdi-chat-outline"></v-text-field>
-          <v-text-field v-model="catForm.color" label="Color" variant="outlined" density="compact" type="color"></v-text-field>
+          <v-text-field v-model="catForm.name" :label="s.colName" variant="outlined" density="compact" class="mb-3"></v-text-field>
+          <v-text-field v-model="catForm.slug" :label="s.adminCatSlug" variant="outlined" density="compact" class="mb-3" :hint="s.adminCatSlugHint"></v-text-field>
+          <v-textarea v-model="catForm.description" :label="s.taskDesc" variant="outlined" rows="2" class="mb-3" hide-details></v-textarea>
+          <v-text-field v-model="catForm.icon" :label="s.adminCatIcon" variant="outlined" density="compact" class="mb-3" :hint="s.adminCatIconHint"></v-text-field>
+          <v-text-field v-model="catForm.color" :label="s.colColor" variant="outlined" density="compact" type="color"></v-text-field>
         </v-card-text>
         <v-card-actions class="pa-4 pt-0">
           <v-spacer></v-spacer>
           <v-btn variant="text" @click="showCatDialog = false">{{ s.forumCancel }}</v-btn>
-          <v-btn color="primary" variant="elevated" :loading="savingCat" @click="saveCategory">{{ s.adminDelete === 'Delete' ? 'Save' : 'Saglabāt' }}</v-btn>
+          <v-btn color="primary" variant="elevated" :loading="savingCat" @click="saveCategory">{{ s.adminSave }}</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -232,7 +232,7 @@ export default {
         if (!res.ok) throw new Error()
         this.adminUsers = await res.json()
       } catch {
-        this.$emit('snackbar', 'Neizdevās ielādēt lietotājus.')
+        this.$emit('snackbar', this.s.errLoadUsers)
       } finally {
         this.adminLoading = false
       }
@@ -245,7 +245,7 @@ export default {
         if (!res.ok) throw new Error()
         this.adminPosts = await res.json()
       } catch {
-        this.$emit('snackbar', 'Neizdevās ielādēt ierakstus.')
+        this.$emit('snackbar', this.s.errLoadPosts)
       } finally {
         this.adminLoading = false
       }
@@ -258,7 +258,7 @@ export default {
         if (!res.ok) throw new Error()
         this.adminComments = await res.json()
       } catch {
-        this.$emit('snackbar', 'Neizdevās ielādēt komentārus.')
+        this.$emit('snackbar', this.s.errLoadComments)
       } finally {
         this.adminLoading = false
       }
@@ -272,7 +272,7 @@ export default {
         const data = await res.json()
         user.banned_at = data.banned_at
       } catch {
-        this.$emit('snackbar', 'Neizdevās mainīt bloķēšanas statusu.')
+        this.$emit('snackbar', this.s.errBanStatus)
       } finally {
         this.togglingBan = null
       }
@@ -284,9 +284,9 @@ export default {
         const res = await apiFetch(`/api/admin/posts/${post.id}`, { method: 'DELETE' })
         if (!res.ok) throw new Error()
         this.adminPosts = this.adminPosts.filter(p => p.id !== post.id)
-        this.$emit('snackbar', 'Ieraksts dzēsts.', 'success')
+        this.$emit('snackbar', this.s.successPostDeleted, 'success')
       } catch {
-        this.$emit('snackbar', 'Neizdevās dzēst ierakstu.')
+        this.$emit('snackbar', this.s.errDeletePost)
       } finally {
         this.deletingPost = null
       }
@@ -299,7 +299,7 @@ export default {
         if (!res.ok) throw new Error()
         this.adminCategories = await res.json()
       } catch {
-        this.$emit('snackbar', 'Neizdevās ielādēt kategorijas.')
+        this.$emit('snackbar', this.s.errLoadCategories)
       } finally {
         this.adminLoading = false
       }
@@ -333,7 +333,7 @@ export default {
         }
         this.showCatDialog = false
       } catch {
-        this.$emit('snackbar', 'Neizdevās saglabāt kategoriju.')
+        this.$emit('snackbar', this.s.errSaveCategory)
       } finally {
         this.savingCat = false
       }
@@ -346,7 +346,7 @@ export default {
         if (!res.ok) throw new Error()
         this.adminCategories = this.adminCategories.filter(c => c.id !== cat.id)
       } catch {
-        this.$emit('snackbar', 'Neizdevās dzēst kategoriju.')
+        this.$emit('snackbar', this.s.errDeleteCategory)
       } finally {
         this.deletingCat = null
       }
@@ -358,9 +358,9 @@ export default {
         const res = await apiFetch(`/api/admin/comments/${comment.id}`, { method: 'DELETE' })
         if (!res.ok) throw new Error()
         this.adminComments = this.adminComments.filter(c => c.id !== comment.id)
-        this.$emit('snackbar', 'Komentārs dzēsts.', 'success')
+        this.$emit('snackbar', this.s.successCommentDeleted, 'success')
       } catch {
-        this.$emit('snackbar', 'Neizdevās dzēst komentāru.')
+        this.$emit('snackbar', this.s.errDeleteComment)
       } finally {
         this.deletingComment = null
       }

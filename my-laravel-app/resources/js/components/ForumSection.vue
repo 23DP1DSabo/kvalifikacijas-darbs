@@ -327,7 +327,7 @@ export default {
         if (!res.ok) throw new Error()
         this.forumCategories = await res.json()
       } catch {
-        this.$emit('snackbar', 'Neizdevās ielādēt foruma kategorijas.')
+        this.$emit('snackbar', this.s.errLoadForumCats)
       } finally {
         this.forumLoading = false
       }
@@ -355,7 +355,7 @@ export default {
         if (!res.ok) throw new Error()
         this.forumPosts = await res.json()
       } catch {
-        this.$emit('snackbar', 'Neizdevās ielādēt ierakstus.')
+        this.$emit('snackbar', this.s.errLoadPosts)
       } finally {
         this.forumLoading = false
       }
@@ -373,7 +373,7 @@ export default {
           this.forumPosts = this.forumPosts.filter(p => p.id !== post.id)
         }
       } catch {
-        this.$emit('snackbar', 'Neizdevās mainīt izlasi.')
+        this.$emit('snackbar', this.s.errChangeFav)
       }
     },
 
@@ -387,7 +387,7 @@ export default {
         if (!res.ok) throw new Error()
         this.forumPostData = await res.json()
       } catch {
-        this.$emit('snackbar', 'Neizdevās ielādēt ierakstu.')
+        this.$emit('snackbar', this.s.errLoadPost)
       } finally {
         this.forumLoading = false
       }
@@ -407,7 +407,7 @@ export default {
         this.showNewPostDialog = false
         if (this.forumCategory) this.forumCategory.posts_count = (this.forumCategory.posts_count || 0) + 1
       } catch {
-        this.$emit('snackbar', 'Neizdevās publicēt ierakstu. Mēģiniet vēlreiz.')
+        this.$emit('snackbar', this.s.errPublishPost)
       }
     },
 
@@ -423,7 +423,7 @@ export default {
         this.forumPostData.comments.unshift(created)
         this.forumNewComment = ''
       } catch {
-        this.$emit('snackbar', 'Neizdevās publicēt komentāru. Mēģiniet vēlreiz.')
+        this.$emit('snackbar', this.s.errPublishComment)
       }
     },
 
@@ -446,7 +446,7 @@ export default {
           })
         }
       } catch {
-        this.$emit('snackbar', 'Neizdevās reģistrēt balsi. Mēģiniet vēlreiz.')
+        this.$emit('snackbar', this.s.errVote)
       }
     },
 
@@ -467,7 +467,7 @@ export default {
         this.forumPostData.post.body  = this.editPostForm.body
         this.showEditPostDialog = false
       } catch {
-        this.$emit('snackbar', 'Neizdevās saglabāt ierakstu.')
+        this.$emit('snackbar', this.s.errSavePost)
       }
     },
 
@@ -480,7 +480,7 @@ export default {
         this.forumPosts = this.forumPosts.filter(p => p.id !== this.forumPostData.post.id)
         this.forumPostData = null
       } catch {
-        this.$emit('snackbar', 'Neizdevās dzēst ierakstu.')
+        this.$emit('snackbar', this.s.errDeletePost)
       }
     },
 
@@ -500,7 +500,7 @@ export default {
         if (idx !== -1) this.forumPostData.comments.splice(idx, 1, { ...this.forumPostData.comments[idx], body: this.editCommentBody })
         this.editingCommentId = null
       } catch {
-        this.$emit('snackbar', 'Neizdevās saglabāt komentāru.')
+        this.$emit('snackbar', this.s.errSaveComment)
       }
     },
 
@@ -511,7 +511,7 @@ export default {
         const idx = this.forumPostData.comments.findIndex(c => c.id === comment.id)
         if (idx !== -1) this.forumPostData.comments.splice(idx, 1)
       } catch {
-        this.$emit('snackbar', 'Neizdevās dzēst komentāru.')
+        this.$emit('snackbar', this.s.errDeleteComment)
       }
     },
 
@@ -520,18 +520,12 @@ export default {
       const mins  = Math.floor(diff / 60000)
       const hours = Math.floor(diff / 3600000)
       const days  = Math.floor(diff / 86400000)
-      if (this.s.calDays && this.s.calDays[0] === 'Mo') {
-        if (mins  < 1)  return 'just now'
-        if (mins  < 60) return `${mins}m ago`
-        if (hours < 24) return `${hours}h ago`
-        if (days  < 7)  return `${days}d ago`
-        return new Date(dateStr).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })
-      }
-      if (mins  < 1)  return 'tikko'
-      if (mins  < 60) return `pirms ${mins} min`
-      if (hours < 24) return `pirms ${hours} h`
-      if (days  < 7)  return `pirms ${days} d`
-      return new Date(dateStr).toLocaleDateString('lv-LV', { day: 'numeric', month: 'short' })
+      const isEn  = this.s.calDays && this.s.calDays[0] === 'Mo'
+      if (mins  < 1)  return this.s.timeJustNow
+      if (mins  < 60) return this.s.timeMinAgo(mins)
+      if (hours < 24) return this.s.timeHourAgo(hours)
+      if (days  < 7)  return this.s.timeDayAgo(days)
+      return new Date(dateStr).toLocaleDateString(isEn ? 'en-US' : 'lv-LV', { day: 'numeric', month: 'short' })
     },
   },
 }

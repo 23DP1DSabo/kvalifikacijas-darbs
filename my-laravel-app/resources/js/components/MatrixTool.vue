@@ -180,7 +180,7 @@ export default {
       apiFetch(`/api/tasks/${task.id}`, {
         method: 'PUT',
         body: JSON.stringify({ x_pos: task.x_pos, y_pos: task.y_pos }),
-      }).catch(() => this.$emit('snackbar', 'Neizdevās saglabāt matricas izmaiņas.'))
+      }).catch(() => this.$emit('snackbar', this.s.errSaveMatrix))
     },
   },
 }
