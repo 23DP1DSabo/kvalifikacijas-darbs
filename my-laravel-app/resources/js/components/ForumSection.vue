@@ -207,14 +207,12 @@
                 <button class="forum-vote-btn forum-vote-up"
                         :class="{ active: comment.user_vote === 1 }"
                         @click="castVote(comment, 1)">
-                  <v-icon size="15">mdi-arrow-up-bold</v-icon>
-                  <span>{{ comment.upvotes }}</span>
+                  ▲ <span>{{ comment.upvotes }}</span>
                 </button>
                 <button class="forum-vote-btn forum-vote-down"
                         :class="{ active: comment.user_vote === -1 }"
                         @click="castVote(comment, -1)">
-                  <v-icon size="15">mdi-arrow-down-bold</v-icon>
-                  <span>{{ comment.downvotes }}</span>
+                  ▼ <span>{{ comment.downvotes }}</span>
                 </button>
               </div>
             </v-card-text>

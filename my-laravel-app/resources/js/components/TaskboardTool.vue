@@ -42,16 +42,6 @@
               clearable
               style="max-width:160px"
             ></v-select>
-            <v-select
-              v-model="filterPriority"
-              :items="priorityFilterItems"
-              :label="s.taskPriority"
-              variant="outlined"
-              density="compact"
-              hide-details
-              clearable
-              style="max-width:160px"
-            ></v-select>
             <v-text-field
               v-model="filterDateFrom"
               :label="s.taskFilterFrom"
@@ -102,21 +92,18 @@
                     {{ formatColDate(col.createdAt) }}
                   </span>
                 </div>
-                <div class="d-flex" style="flex-shrink:0">
-                  <v-btn icon size="x-small" variant="text" @click="toggleCollapse(col.id)"
-                         :title="collapsedColumns.includes(col.id) ? s.taskboardExpand : s.taskboardCollapse"
-                         :aria-label="collapsedColumns.includes(col.id) ? s.taskboardExpand : s.taskboardCollapse">
-                    <v-icon size="14">{{ collapsedColumns.includes(col.id) ? 'mdi-chevron-down' : 'mdi-chevron-up' }}</v-icon>
-                  </v-btn>
-                  <v-btn icon size="x-small" variant="text" color="primary"
-                         :title="s.taskboardEditCol" :aria-label="s.taskboardEditCol"
-                         @click="openEditColDialog(col)">
-                    <v-icon size="14">mdi-pencil</v-icon>
-                  </v-btn>
-                  <v-btn v-if="col.id !== 'default'" icon size="x-small" variant="text" color="error"
-                         :title="s.taskboardDeleteCol" :aria-label="s.taskboardDeleteCol" @click="deleteColumn(col.id)">
-                    <v-icon size="14">mdi-close</v-icon>
-                  </v-btn>
+                <div class="d-flex" style="flex-shrink:0; gap:2px">
+                  <button class="tb-col-btn" @click="toggleCollapse(col.id)"
+                          :aria-label="collapsedColumns.includes(col.id) ? s.taskboardExpand : s.taskboardCollapse">
+                    {{ collapsedColumns.includes(col.id) ? '▾' : '▴' }}
+                  </button>
+                  <button class="tb-col-btn" @click="openEditColDialog(col)" :aria-label="s.taskboardEditCol">
+                    {{ s.taskboardEdit }}
+                  </button>
+                  <button v-if="col.id !== 'default'" class="tb-col-btn tb-col-btn--danger"
+                          @click="deleteColumn(col.id)" :aria-label="s.taskboardDeleteCol">
+                    ✕
+                  </button>
                 </div>
               </div>
 
@@ -145,14 +132,12 @@
                         </v-chip>
                         <span v-else></span>
                         <div class="task-actions">
-                          <v-btn icon size="x-small" variant="text" color="primary" :title="s.taskboardEdit" :aria-label="s.taskboardEdit"
-                                 @click.stop="openTaskDialog(task)">
-                            <v-icon size="13">mdi-pencil</v-icon>
-                          </v-btn>
-                          <v-btn icon size="x-small" variant="text" color="error" :title="s.taskboardDelete" :aria-label="s.taskboardDelete"
-                                 @click.stop="deleteTask(task.id)">
-                            <v-icon size="13">mdi-delete</v-icon>
-                          </v-btn>
+                          <button class="tb-task-btn" @click.stop="openTaskDialog(task)" :aria-label="s.taskboardEdit">
+                            {{ s.taskboardEdit }}
+                          </button>
+                          <button class="tb-task-btn tb-task-btn--danger" @click.stop="deleteTask(task.id)" :aria-label="s.taskboardDelete">
+                            {{ s.taskboardDelete }}
+                          </button>
                         </div>
                       </div>
 
@@ -276,7 +261,6 @@ export default {
       dragOverColumn: null,
       boardFilter: '',
       filterStatus: '',
-      filterPriority: '',
       filterDateFrom: '',
       filterDateTo: '',
       quickAddCol: null,
@@ -291,21 +275,13 @@ export default {
 
   computed: {
     hasActiveFilters() {
-      return !!(this.boardFilter || this.filterStatus || this.filterPriority || this.filterDateFrom || this.filterDateTo)
+      return !!(this.boardFilter || this.filterStatus || this.filterDateFrom || this.filterDateTo)
     },
     statusFilterItems() {
       return [
         { title: this.s.statusPending,    value: 'pending' },
         { title: this.s.statusInProgress, value: 'in_progress' },
         { title: this.s.statusDone,       value: 'completed' },
-      ]
-    },
-    priorityFilterItems() {
-      return [
-        { title: this.s.taskboardPriHigh, value: 'high' },
-        { title: this.s.taskboardPriMed,  value: 'medium' },
-        { title: this.s.taskboardPriLow,  value: 'low' },
-        { title: this.s.priNone,          value: 'none' },
       ]
     },
   },
@@ -319,7 +295,6 @@ export default {
           if (!t.title.toLowerCase().includes(q) && !(t.description || '').toLowerCase().includes(q)) return false
         }
         if (this.filterStatus && t.status !== this.filterStatus) return false
-        if (this.filterPriority && (t.priority || 'none') !== this.filterPriority) return false
         if (this.filterDateFrom && t.created_at && t.created_at.slice(0, 10) < this.filterDateFrom) return false
         if (this.filterDateTo   && t.created_at && t.created_at.slice(0, 10) > this.filterDateTo)   return false
         return true
@@ -329,7 +304,6 @@ export default {
     clearFilters() {
       this.boardFilter    = ''
       this.filterStatus   = ''
-      this.filterPriority = ''
       this.filterDateFrom = ''
       this.filterDateTo   = ''
     },

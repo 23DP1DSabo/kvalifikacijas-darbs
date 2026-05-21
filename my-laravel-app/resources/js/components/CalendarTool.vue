@@ -10,14 +10,14 @@
 
           <div class="cal-nav">
             <div class="cal-nav-group">
-              <v-btn icon variant="text" size="small" color="primary" :aria-label="s.calPrevMonth" @click="changeMonth(-1)"><v-icon>mdi-chevron-left</v-icon></v-btn>
+              <button class="cal-nav-arrow" :aria-label="s.calPrevMonth" @click="changeMonth(-1)">&#8249;</button>
               <span class="cal-month-label" aria-live="polite">{{ calMonthName }}</span>
-              <v-btn icon variant="text" size="small" color="primary" :aria-label="s.calNextMonth" @click="changeMonth(1)"><v-icon>mdi-chevron-right</v-icon></v-btn>
+              <button class="cal-nav-arrow" :aria-label="s.calNextMonth" @click="changeMonth(1)">&#8250;</button>
             </div>
             <div class="cal-nav-group">
-              <v-btn icon variant="text" size="small" color="primary" :aria-label="s.calPrevYear" @click="changeYear(-1)"><v-icon>mdi-chevron-left</v-icon></v-btn>
+              <button class="cal-nav-arrow" :aria-label="s.calPrevYear" @click="changeYear(-1)">&#8249;</button>
               <span class="cal-year-label">{{ calendarYear }}</span>
-              <v-btn icon variant="text" size="small" color="primary" :aria-label="s.calNextYear" @click="changeYear(1)"><v-icon>mdi-chevron-right</v-icon></v-btn>
+              <button class="cal-nav-arrow" :aria-label="s.calNextYear" @click="changeYear(1)">&#8250;</button>
             </div>
             <v-btn size="x-small" variant="tonal" @click="goToToday">{{ s.calToday }}</v-btn>
           </div>

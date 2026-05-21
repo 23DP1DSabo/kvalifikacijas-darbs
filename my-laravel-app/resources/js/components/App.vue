@@ -881,13 +881,13 @@
       tasks: {
         deep: true,
         handler(val) {
-          localStorage.setItem('tf_tasks', JSON.stringify(val))
+          if (!this.currentUser) localStorage.setItem('tf_tasks', JSON.stringify(val))
         }
       },
       columns: {
         deep: true,
         handler(val) {
-          localStorage.setItem('tf_columns', JSON.stringify(val))
+          if (!this.currentUser) localStorage.setItem('tf_columns', JSON.stringify(val))
         }
       },
       language(val) {
@@ -1349,6 +1349,7 @@
   }
 
   .main-content { display: block; height: auto; }
+  .main-content .v-main__wrap { padding-top: 40px; }
 
   .site-section {
     padding: 20px;
@@ -1457,7 +1458,7 @@
   }
 
   /* Timer card */
-  .pomo-card { text-align: center; transition: background 0.4s; }
+  .pomo-card { text-align: center; transition: background 0.4s; min-width: 0; }
   .pomo-phase-work      { background: linear-gradient(135deg, #7b2d2d 0%, #4a2010 100%) !important; color: #fff !important; }
   .pomo-phase-break     { background: linear-gradient(135deg, #1a5c35 0%, #2d7a4f 100%) !important; color: #fff !important; }
   .pomo-phase-longBreak { background: linear-gradient(135deg, #1a3a5c 0%, #2d5a7a 100%) !important; color: #fff !important; }
@@ -1568,7 +1569,7 @@
   .pomo-panel-tabs  { background: transparent !important; }
 
   /* Task list card */
-  .pomo-tasks-card   { background: #faf6ef !important; border-radius: 0 !important; }
+  .pomo-tasks-card   { background: #faf6ef !important; border-radius: 0 !important; min-width: 0; }
   .pomo-tasks-header { display: flex; justify-content: space-between; align-items: center; }
   .pomo-tasks-title  { font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #555; }
   .pomo-empty        { text-align: center; color: #aaa; padding: 20px 0; font-size: 0.88rem; }
@@ -1583,11 +1584,21 @@
   .pomo-task-done .pomo-task-name{ text-decoration: line-through; color: #aaa; }
 
   .pomo-task-name {
-    flex: 1; font-size: 0.92rem; cursor: pointer;
+    flex: 1; min-width: 0; font-size: 0.92rem; cursor: pointer;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .pomo-task-name:hover { text-decoration: underline; }
-  .pomo-task-count { font-size: 0.78rem; color: #888; white-space: nowrap; display: flex; align-items: center; }
+  .pomo-task-count { font-size: 0.78rem; color: #888; white-space: nowrap; }
+
+  .pomo-task-btn {
+    background: none; border: none; cursor: pointer; font-size: 0.9rem;
+    padding: 1px 4px; border-radius: 3px; color: #8B6E43; line-height: 1;
+  }
+  .pomo-task-btn:hover { background: rgba(139,110,67,.12); }
+  .pomo-task-btn--active { color: #5a3e1b; font-weight: bold; }
+  .pomo-task-btn--done { color: #4caf50; }
+  .v-theme--dark .pomo-task-btn { color: #d4a851; }
+  .v-theme--dark .pomo-task-btn--done { color: #81c784; }
 
   /* Queue rows */
   .pomo-queue-row {
@@ -1601,6 +1612,17 @@
   .pomo-queue-label      { flex: 1; font-size: 0.92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .pomo-queue-dur        { font-size: 0.8rem; color: #888; white-space: nowrap; margin-right: 4px; }
   .pomo-queue-total      { font-size: 0.82rem; color: #888; text-align: right; border-top: 1px solid #e0d8cc; padding-top: 8px; }
+
+  .pomo-queue-btn {
+    background: none; border: none; cursor: pointer; font-size: 0.78rem;
+    padding: 1px 4px; border-radius: 3px; color: #8B6E43; line-height: 1.4;
+  }
+  .pomo-queue-btn:hover:not(:disabled) { background: rgba(139,110,67,.12); }
+  .pomo-queue-btn:disabled { opacity: 0.25; cursor: default; }
+  .pomo-queue-btn--danger { color: #c62828; }
+  .pomo-queue-btn--danger:hover { background: rgba(198,40,40,.1); }
+  .v-theme--dark .pomo-queue-btn { color: #d4a851; }
+  .v-theme--dark .pomo-queue-btn--danger { color: #ef9a9a; }
 
   @media (max-width: 700px) {
     .pomo-layout  { grid-template-columns: 1fr; }
@@ -1696,8 +1718,9 @@
   .trello-task-title {
     font-size: 0.86rem;
     font-weight: 600;
-    flex: 1;
     line-height: 1.3;
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
   .trello-task-desc {
     font-size: 0.76rem;
@@ -1763,6 +1786,18 @@
 
   /* Task actions fade in on hover */
   .task-actions { opacity: 1; }
+
+  .tb-col-btn, .tb-task-btn {
+    background: none; border: none; cursor: pointer; border-radius: 3px;
+    font-size: 0.72rem; padding: 1px 5px; color: #8B6E43; line-height: 1.4;
+  }
+  .tb-col-btn:hover, .tb-task-btn:hover { background: rgba(139,110,67,.12); }
+  .tb-col-btn--danger, .tb-task-btn--danger { color: #c62828; }
+  .tb-col-btn--danger:hover, .tb-task-btn--danger:hover { background: rgba(198,40,40,.1); }
+  .v-theme--dark .tb-col-btn, .v-theme--dark .tb-task-btn { color: #d4a851; }
+  .v-theme--dark .tb-col-btn:hover, .v-theme--dark .tb-task-btn:hover { background: rgba(212,168,81,.15); }
+  .v-theme--dark .tb-col-btn--danger, .v-theme--dark .tb-task-btn--danger { color: #ef9a9a; }
+  .v-theme--dark .tb-col-btn--danger:hover, .v-theme--dark .tb-task-btn--danger:hover { background: rgba(239,154,154,.1); }
   .chip-del {
     margin-left: 6px; opacity: 0.5; cursor: pointer; font-weight: bold; font-size: 0.9em;
     background: none; border: none; padding: 0; line-height: inherit; color: inherit;
@@ -1933,6 +1968,10 @@
     cursor: grab;
     user-select: none;
     box-shadow: 0 1px 4px rgba(100,72,20,0.3);
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .pool-chip:active { cursor: grabbing; opacity: 0.7; }
 
@@ -1950,6 +1989,19 @@
     align-items: center;
     gap: 2px;
   }
+  .cal-nav-arrow {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.5rem;
+    line-height: 1;
+    padding: 2px 6px;
+    color: #8B6E43;
+    border-radius: 4px;
+  }
+  .cal-nav-arrow:hover { background: rgba(139,110,67,.12); }
+  .v-theme--dark .cal-nav-arrow { color: #d4a851; }
+  .v-theme--dark .cal-nav-arrow:hover { background: rgba(212,168,81,.15); }
   .cal-month-label {
     font-size: 1.1rem;
     font-weight: 600;
@@ -1983,6 +2035,8 @@
     background: #faf6ef;
     cursor: pointer;
     transition: background 0.15s;
+    overflow: hidden;
+    min-width: 0;
   }
   .cal-day-cell:hover { background: #f0e8d8; }
   .cal-other { background: #f5f0e8; cursor: default; }

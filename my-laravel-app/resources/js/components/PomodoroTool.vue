@@ -92,23 +92,22 @@
               <div v-for="task in tasks" :key="task.id"
                    class="pomo-task-row"
                    :class="{ 'pomo-task-focused': focusedTaskId === task.id, 'pomo-task-done': task.status === 'completed' }">
-                <v-btn icon size="x-small" variant="text" color="primary"
-                       :aria-label="focusedTaskId === task.id ? s.pomoUnfocusTask : s.pomoFocusTask"
-                       @click="focusedTaskId = (focusedTaskId === task.id ? null : task.id)">
-                  <v-icon size="18">{{ focusedTaskId === task.id ? 'mdi-radiobox-marked' : 'mdi-radiobox-blank' }}</v-icon>
-                </v-btn>
+                <button class="pomo-task-btn"
+                        :class="{ 'pomo-task-btn--active': focusedTaskId === task.id }"
+                        :aria-label="focusedTaskId === task.id ? s.pomoUnfocusTask : s.pomoFocusTask"
+                        @click="focusedTaskId = (focusedTaskId === task.id ? null : task.id)">
+                  ●
+                </button>
                 <span class="pomo-task-name" @click="openTaskDialog(task)">{{ task.title }}</span>
                 <span class="pomo-task-count" aria-hidden="true">
-                  <v-icon size="13" class="mr-1" style="color:#e74c3c">mdi-timer</v-icon>
                   {{ task.done_pomodoros || 0 }} / {{ task.est_pomodoros || 1 }}
                 </span>
-                <v-btn icon size="x-small" variant="text"
-                       :aria-label="s.pomoCompleteTask"
-                       @click="toggleTaskDone(task)">
-                  <v-icon size="18" :color="task.status === 'completed' ? 'success' : ''">
-                    {{ task.status === 'completed' ? 'mdi-check-circle' : 'mdi-circle-outline' }}
-                  </v-icon>
-                </v-btn>
+                <button class="pomo-task-btn"
+                        :class="{ 'pomo-task-btn--done': task.status === 'completed' }"
+                        :aria-label="s.pomoCompleteTask"
+                        @click="toggleTaskDone(task)">
+                  {{ task.status === 'completed' ? '✓' : '○' }}
+                </button>
               </div>
             </v-card-text>
           </v-card>
@@ -135,15 +134,9 @@
                 </v-icon>
                 <span class="pomo-queue-label">{{ block.label }}</span>
                 <span class="pomo-queue-dur">{{ block.minutes }}min</span>
-                <v-btn icon size="x-small" variant="text" color="primary" :disabled="idx === 0" :aria-label="s.pomoMoveUp" @click="moveQueueBlock(idx, -1)">
-                  <v-icon size="14">mdi-arrow-up</v-icon>
-                </v-btn>
-                <v-btn icon size="x-small" variant="text" color="primary" :disabled="idx === sessionQueue.length - 1" :aria-label="s.pomoMoveDown" @click="moveQueueBlock(idx, 1)">
-                  <v-icon size="14">mdi-arrow-down</v-icon>
-                </v-btn>
-                <v-btn icon size="x-small" variant="text" color="error" :aria-label="s.pomoRemoveBlock" @click="removeQueueBlock(idx)">
-                  <v-icon size="14">mdi-close</v-icon>
-                </v-btn>
+                <button class="pomo-queue-btn" :disabled="idx === 0" :aria-label="s.pomoMoveUp" @click="moveQueueBlock(idx, -1)">▲</button>
+                <button class="pomo-queue-btn" :disabled="idx === sessionQueue.length - 1" :aria-label="s.pomoMoveDown" @click="moveQueueBlock(idx, 1)">▼</button>
+                <button class="pomo-queue-btn pomo-queue-btn--danger" :aria-label="s.pomoRemoveBlock" @click="removeQueueBlock(idx)">✕</button>
               </div>
 
               <div v-if="sessionQueue.length > 0" class="pomo-queue-total mt-3">
