@@ -161,7 +161,7 @@ export default {
           const res = await apiFetch(`/api/tasks/${id}`, { method: 'PUT', body: JSON.stringify({ due_date: dateStr }) })
           if (!res.ok) throw new Error()
         } catch {
-          this.$emit('snackbar', 'Neizdevās saglabāt kalendāra izmaiņas.')
+          this.$emit('snackbar', 'Neizdevās saglabāt kalendāra izmaiņas..')
         }
       }
     },
