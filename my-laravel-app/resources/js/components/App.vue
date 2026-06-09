@@ -40,7 +40,7 @@
 
         <v-menu v-model="a11yMenuOpen" :close-on-content-click="false" location="bottom end">
           <template v-slot:activator="{ props }">
-            <v-btn variant="text" class="desktop-nav-btn" v-bind="props">
+            <v-btn variant="text" class="desktop-nav-btn nav-a11y-btn" v-bind="props">
               {{ s.navA11y }} <span class="riki-arrow">{{ a11yMenuOpen ? '▴' : '▾' }}</span>
             </v-btn>
           </template>
@@ -66,7 +66,7 @@
             <span v-else class="nav-avatar-initials">{{ currentUser.name[0] }}{{ currentUser.surname ? currentUser.surname[0] : '' }}</span>
             {{ currentUser.name }}
           </span>
-          <v-btn variant="text" class="desktop-nav-btn" @click="logout()">{{ s.navLogout }}</v-btn>
+          <v-btn variant="text" class="desktop-nav-btn nav-logout-btn" @click="logout()">{{ s.navLogout }}</v-btn>
         </template>
         <template v-else>
           <v-btn color="primary" variant="elevated" size="small" class="desktop-nav-login" @click="showLoginWindow = true">{{ s.navLogin }}</v-btn>
@@ -191,7 +191,7 @@
 
 <!-- Cards -->
 
-      <v-container fluid class="py-8">
+      <v-container fluid class="pt-8 pb-16">
         <v-row align="stretch" class="home-cards-row">
           <v-col cols="12" sm="6" md="3" class="home-card-col">
             <v-card class="card" id="pomodoro-card" @click="currentPage = 'pomodoro'">
@@ -660,8 +660,10 @@
           homeTagline: 'Tavs sākums produktīvai profesionālajai izaugsmei!',
           homeDesc1: 'Mūsdienās, pateicoties tehnoloģiju straujai attīstībai, cilvēki arvien biežāk saskaras ar situācijām kad ir nepieciešams veikt vairākus darbus īsā laika sprīdī, neatkarīgi no tā vai tas notiek izglītības vai karjeras izaugsmē. Studenti, skolotāji, lietveži, darba vadītāji un daudzu citu nozaru cilvēki bieži vien var būt pārslogoti un pārņemti gan ar fizisku, gan ar mentālu darbu, tādā veidā iekavējot vai pavirši izpildot tos. Pats esmu novērojis prokrastināciju (darbu atlikšanu līdz pēdējam brīdim) kā rezultātu no šīs problēmas vienaudžu vidū savā kursā, draugu lokā un sociālajos tīklos, cilvēkiem daloties ar pieredzi.',
           homeDesc2: 'Mūsu uzdevums ir izveidot platformu, kas sniedz lietotājam uzreiz vairākas metodes sava darbalaika plānošanai un organizēšanai, lai izvairītos no prokrastinācijas, izdeguma un citiem pārslodzes rezultātiem. Šobrīd neesmu atradis vietni, kas atbilstu šādām prasībām, tāpēc liecinu ka tādas platformas izveide ir lietderīga un aktuāla. Ar tās palīdzību cilvēki spēs ne tikai, attīstīt savas administratīvās prasmes un veikt vairāk darba īsākā laika sprīdī, bet arī cerams pašizglītoties šajā jomā no citiem un palīdzēt citiem ar līdzīgiem trūkumiem. Datu bāzē tiks glabāta informācija par tādiem elementiem kā lietotāji, forumi, publicējumi, komentāri un pulkstenis, matrica, kalendārs, uzdevumi, uzdevumu dēlis.',
-          aboutAuthorCredit: 'Projekta autors: Daniels Šabovičs DP3-1',
-          aboutProjectDesc: 'Projekts sniedz lietotājam uzreiz vairākas metodes sava darbalaika plānošanai un organizēšanai, lai izvairītos no prokrastinācijas, izdeguma un citiem pārslodzes rezultātiem. Šobrīd neesmu atradis vietni, kas atbilstu šādām prasībām, tāpēc liecinu ka tādas platformas izveide ir lietderīga un aktuāla. Ar tās palīdzību cilvēki spēs ne tikai, attīstīt savas administratīvās prasmes un veikt vairāk darba īsākā laika sprīdī, bet arī cerams pašizglītoties šajā jomā no citiem un palīdzēt citiem ar līdzīgiem trūkumiem. Datu bāzē tiks glabāta informācija par tādiem elementiem kā lietotāji, forumi, publicējumi, komentāri un pulkstenis, matrica, kalendārs, uzdevumi, uzdevumu dēlis.',
+          aboutAuthorCredit: 'Daniels Šabovičs, DP3-1 — Rīgas Valsts tehnikums. Šis projekts tika izveidots kā kvalifikācijas darbs 2024./2025. mācību gadā informācijas tehnoloģiju specialitātē.',
+          aboutProjectDesc: 'Mūsdienās, pateicoties tehnoloģiju straujai attīstībai, cilvēki arvien biežāk saskaras ar nepieciešamību veikt vairākus darbus īsā laika sprīdī — neatkarīgi no tā, vai tas notiek izglītībā vai karjerā. Prokrastinācija jeb darbu atlikšana ir plaši izplatīta problēma, kas negatīvi ietekmē gan produktivitāti, gan pašsajūtu. TaskForge radīts, lai palīdzētu šo problēmu risināt.',
+          aboutProjectDesc2: 'TaskForge piedāvā četrus galvenos rīkus vienā platformā: Pomodoro taimeris palīdz sadalīt darbu fokusētos intervālos ar regulārām pauzēm; uzdevumu dēlis (Kanban) nodrošina vizuālu darbu pārvaldību pa pielāgojamām kolonnām; Eizenhauera matrica palīdz noteikt uzdevumu prioritātes pēc svarīguma un steidzamības; bet kalendārs dod pārskatu par uzdevumiem laika griezumā. Nav nepieciešamības izmantot vairākas atsevišķas lietotnes — viss atrodas vienā vietā.',
+          aboutProjectDesc3: 'Projekts paredzēts studentiem, profesionāļiem un ikvienam, kurš vēlas uzlabot savu laika pārvaldību. Tā mērķis ir kļūt par uzticamu ikdienas palīgu — vienkāršu, pārskatāmu un efektīvu. Nākotnē plānots paplašināt funkcionalitāti ar sadarbības iespējām, personīgo statistiku un pielāgotiem ieteikumiem katram lietotājam.',
           errServer: 'Servera kļūda. Mēģiniet vēlreiz.', errServerShort: 'Servera kļūda.', errGeneric: 'Kļūda.',
           errLogin: 'Pieslēgšanās neizdevās.', errRegister: 'Reģistrācija neizdevās.',
           errSaveTask: 'Neizdevās saglabāt uzdevumu. Mēģiniet vēlreiz.',
@@ -816,8 +818,10 @@
           homeTagline: 'Your start for productive professional growth!',
           homeDesc1: 'Nowadays, thanks to rapid technological development, people increasingly face situations where they need to perform multiple tasks in a short time, regardless of whether it\'s in education or career growth. Students, teachers, business people, managers, and people from many other fields are often overwhelmed and burdened by both physical and mental work, thereby delaying or carelessly completing them. I myself have observed procrastination (postponing work until the last minute) as a result of this problem among peers in my course, in my circle of friends, and on social media, with people sharing their experiences.',
           homeDesc2: 'Our task is to create a platform that provides users with multiple methods for planning and organizing their work time at once, to avoid procrastination, burnout, and other effects of overload. Currently, I have not found a website that meets such requirements, so I believe that the creation of such a platform is useful and relevant. With its help, people will be able to not only develop their administrative skills and do more work in a shorter time, but also hopefully educate themselves in this field from others and help others with similar shortcomings. The database stores information about users, forums, posts, comments, timer, matrix, calendar, tasks, and task board.',
-          aboutAuthorCredit: 'Project author: Daniels Šabovičs DP3-1',
-          aboutProjectDesc: 'The project provides users with multiple methods for planning and organizing their work time, to avoid procrastination, burnout, and other effects of overload. No existing website meets such requirements, making this platform both useful and relevant. With its help, people can develop their administrative skills, do more work in less time, learn from others in this field, and help those facing similar challenges. The database stores information about users, forums, posts, comments, timer, matrix, calendar, tasks, and task board.',
+          aboutAuthorCredit: 'Daniels Šabovičs, DP3-1 — Riga State Technical School. This project was created as a qualification thesis for the 2024/2025 academic year in the field of information technology.',
+          aboutProjectDesc: 'In today\'s fast-paced world, people increasingly face the challenge of managing multiple tasks in a short time — whether in education or professional life. Procrastination is a widespread problem that negatively affects both productivity and well-being. TaskForge was built to help tackle this problem head-on.',
+          aboutProjectDesc2: 'TaskForge offers four core tools in one platform: the Pomodoro timer helps break work into focused intervals with regular breaks; the task board (Kanban) provides visual task management across customisable columns; the Eisenhower matrix helps prioritise tasks by importance and urgency; and the calendar gives a clear overview of tasks over time. No need for multiple separate apps — everything is in one place.',
+          aboutProjectDesc3: 'The project is aimed at students, professionals, and anyone looking to improve their time management. Its goal is to become a reliable daily companion — simple, clear, and effective. Future plans include adding collaboration features, personal productivity statistics, and tailored recommendations for each user.',
           errServer: 'Server error. Try again.', errServerShort: 'Server error.', errGeneric: 'Error.',
           errLogin: 'Login failed.', errRegister: 'Registration failed.',
           errSaveTask: 'Failed to save task. Try again.',
@@ -1348,8 +1352,11 @@
     color: #1c1c1c;
   }
 
-  .main-content { display: block; height: auto; }
-  .main-content .v-main__wrap { padding-top: 40px; }
+  /* All v-main.main-content instances — force clear the fixed header.
+     Tool components each embed their own v-main which doesn't inherit
+     --v-layout-top from the Vuetify layout context, so we set it explicitly. */
+  .v-main.main-content { display: block; height: auto; padding-top: 72px !important; }
+  .v-main.main-content .v-main__wrap { padding-top: 0 !important; }
 
   .site-section {
     padding: 20px;
@@ -1424,22 +1431,27 @@
   .features-grid { display: flex; flex-wrap: wrap; gap: 20px; margin-top: 20px; }
 
   .feature-card {
-    flex: 1 1 calc(50% - 20px);
-    padding: 15px;
-    border: 1px solid #c8b89a;
+    padding: 28px 24px;
+    border: 2px solid #8B6E43 !important;
     background-color: #faf6ef;
     border-radius: 0;
+    text-align: left;
   }
 
-  .contact-content { display: flex; gap: 20px; margin-top: 20px; flex-wrap: wrap; }
+  .feature-card h3 { margin-bottom: 10px; text-align: center; }
+  .feature-card p  { line-height: 1.7; }
+
+  /* about: centered column layout */
+  .about-container { max-width: 860px; margin: 0 auto; }
+  .about-cards-wrap { max-width: 720px; margin: 0 auto; }
+  .about-section .v-card-text > h2 { text-align: center; }
 
   .contact-info,
   .contact-form {
-    flex: 1;
-    min-width: 250px;
-    padding: 15px;
+    padding: 20px;
     background-color: #faf6ef;
     border-radius: 0;
+    border: 2px solid #8B6E43 !important;
   }
 
   .contact-form .v-text-field,
@@ -1489,6 +1501,8 @@
     padding: 4px 14px;
     transition: background 0.2s, color 0.2s;
     letter-spacing: 0.03em;
+    min-width: 68px;
+    white-space: nowrap;
   }
   .pomo-mode-btn.active { background: rgba(255,255,255,0.25); color: #fff; }
   .pomo-mode-btn:hover  { color: #fff; }
@@ -1499,8 +1513,13 @@
     border-radius: 0;
     color: #fff;
     cursor: pointer;
-    width: 34px; height: 34px;
+    height: 34px;
+    padding: 0 12px;
     display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
     transition: background 0.2s;
   }
   .pomo-gear-btn:hover { background: rgba(255,255,255,0.35); }
@@ -1519,6 +1538,8 @@
     cursor: pointer; font-size: 0.82rem; font-weight: 600;
     padding: 5px 16px;
     transition: background 0.2s;
+    min-width: 100px;
+    white-space: nowrap;
   }
   .pomo-tab.active, .pomo-tab:hover { background: rgba(255,255,255,0.32); color: #fff; }
 
@@ -1838,6 +1859,8 @@
     display: flex;
     align-items: stretch;
     gap: 8px;
+    max-width: 520px;
+    margin: 0 auto;
   }
   .mfree-y-label {
     writing-mode: vertical-rl;
@@ -2084,6 +2107,8 @@
     padding: 12px 4px;
     border-top: 1px solid rgba(139, 110, 67, 0.2);
   }
+  /* Keep the back button stable regardless of language ("Atpakaļ" LV vs "Back" EN) */
+  .tool-bottom-nav > .v-btn:first-child { min-width: 106px; white-space: nowrap; }
   .tool-links {
     display: flex;
     flex-wrap: wrap;
@@ -2227,11 +2252,16 @@
     letter-spacing: 0.02em;
     text-transform: none !important;
     min-width: unset !important;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 
   .desktop-nav-btn:hover { color: #d4a851 !important; }
 
   .desktop-nav-active { color: #d4a851 !important; border-bottom: 2px solid #d4a851; border-radius: 0 !important; }
+
+  /* Per-button stable widths — sized to the wider language so nav never shifts */
+  .nav-a11y-btn.desktop-nav-btn { min-width: 136px !important; } /* "Accessibility ▾" > "Pieejamība ▾" */
 
   .desktop-nav-username {
     color: #d4a851;
@@ -2243,7 +2273,9 @@
     align-items: center;
   }
 
-  .desktop-nav-login { margin-left: 4px; border-radius: 0 !important; }
+  /* Pin login/logout button to its widest text ("Pieslēgties" LV) */
+  .desktop-nav-login { margin-left: 4px; border-radius: 0 !important; min-width: 94px !important; }
+  .desktop-nav-btn.nav-logout-btn { min-width: 76px !important; } /* "Log Out" > "Iziet" */
 
   .riki-arrow {
     font-size: 0.7rem;
@@ -2376,6 +2408,7 @@
     font-size: 1.1rem;
     line-height: 1;
     margin-right: 10px;
+    color: #d4cbbf;
   }
   .lang-flag-drawer {
     margin-right: 20px;
@@ -2420,9 +2453,9 @@
   .v-theme--dark #task-card,
   .v-theme--dark #eisenhower-card,
   .v-theme--dark #calendar-card { background-color: #252220 !important; color: #e0d8cc !important; }
-  .v-theme--dark .feature-card  { background-color: #252220 !important; border-color: #3a3020 !important; color: #e0d8cc; }
+  .v-theme--dark .feature-card  { background-color: #252220 !important; border-color: #6b4f2a !important; color: #e0d8cc; }
   .v-theme--dark .contact-info,
-  .v-theme--dark .contact-form  { background-color: #252220 !important; color: #e0d8cc; }
+  .v-theme--dark .contact-form  { background-color: #252220 !important; color: #e0d8cc; border-color: #6b4f2a !important; }
   .v-theme--dark .about-section { background-color: #252220 !important; }
 
   /* Contact form inputs have a hardcoded light background in scoped CSS — override it */

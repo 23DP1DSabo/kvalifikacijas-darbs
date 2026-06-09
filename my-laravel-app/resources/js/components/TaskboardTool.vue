@@ -12,7 +12,7 @@
                 {{ tasks.length }} {{ s.taskboardTasks }}
               </v-chip>
             </div>
-            <div class="d-flex align-center gap-2 flex-wrap">
+            <div class="d-flex align-center ga-3 flex-wrap">
               <v-text-field
                 v-model="boardFilter"
                 :placeholder="s.taskboardSearch"
@@ -24,14 +24,14 @@
                 hide-details
                 style="min-width:180px"
               ></v-text-field>
-              <v-btn color="primary" variant="elevated" prepend-icon="mdi-plus" @click="openTaskDialog()">
+              <v-btn color="primary" variant="elevated" prepend-icon="mdi-plus" @click="openTaskDialog()" style="min-width:152px">
                 {{ s.taskboardNewTask }}
               </v-btn>
             </div>
           </div>
 
           <!-- Filter row -->
-          <div class="d-flex align-center gap-2 flex-wrap mb-4">
+          <div class="d-flex align-center ga-3 flex-wrap mb-4">
             <v-select
               v-model="filterStatus"
               :items="statusFilterItems"

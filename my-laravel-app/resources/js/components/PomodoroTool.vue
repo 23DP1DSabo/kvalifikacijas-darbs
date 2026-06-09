@@ -14,7 +14,7 @@
                 <button class="pomo-mode-btn" :class="{ active: pomodoroMode === 'queue' }" @click="setMode('queue')">{{ s.pomoSession }}</button>
               </div>
               <button class="pomo-gear-btn" @click="showPomodoroSettings = true" :title="s.pomoSettingsTitle">
-                <v-icon size="20">mdi-cog-outline</v-icon>
+                {{ s.pomoSettingsTitle }}
               </button>
             </div>
 

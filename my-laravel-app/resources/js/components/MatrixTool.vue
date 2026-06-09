@@ -6,8 +6,8 @@
           <div class="d-flex justify-space-between align-center mb-4 flex-wrap gap-2">
             <h2>{{ s.matrixTitle }}</h2>
             <div class="d-flex ga-2">
-              <v-btn color="primary" variant="elevated" @click="openTaskDialog()">{{ s.newTask }}</v-btn>
-              <v-btn color="error" variant="outlined" @click="clearMatrix">{{ s.matrixClear }}</v-btn>
+              <v-btn color="primary" variant="elevated" @click="openTaskDialog()" style="min-width:152px">{{ s.newTask }}</v-btn>
+              <v-btn color="error" variant="outlined" @click="clearMatrix" style="min-width:148px">{{ s.matrixClear }}</v-btn>
             </div>
           </div>
 
