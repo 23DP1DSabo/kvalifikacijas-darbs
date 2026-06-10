@@ -159,9 +159,9 @@ section {
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  margin-top: 100px;
   height: 80vh;
   gap: 20px;
+  padding-top: 80px;
 }
 
 .actions-section {
