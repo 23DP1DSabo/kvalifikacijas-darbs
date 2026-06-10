@@ -27,7 +27,7 @@ class UserController extends Controller
             'password'         => 'required|string|min:8|confirmed',
         ]);
         if (!Hash::check($data['current_password'], $request->user()->password)) {
-            return response()->json(['errors' => ['current_password' => ['Nepareiza pašreizējā parole.']]], 422);
+            return response()->json(['errors' => ['current_password' => ['Incorrect current password.']]], 422);
         }
         $request->user()->update(['password' => Hash::make($data['password'])]);
         return response()->json(['message' => 'ok']);

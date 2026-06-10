@@ -353,7 +353,9 @@
           <v-alert v-if="authError" type="error" variant="tonal" class="mb-4">{{ authError }}</v-alert>
           <v-form @submit.prevent="handleLogin">
             <v-text-field v-model="loginForm.email" :label="s.loginEmail" type="email" required class="mb-4"></v-text-field>
-            <v-text-field v-model="loginForm.password" :label="s.loginPass" type="password" required class="mb-4"></v-text-field>
+            <v-text-field v-model="loginForm.password" :label="s.loginPass" :type="showLoginPass ? 'text' : 'password'" required class="mb-4">
+              <template #append><v-btn variant="text" size="x-small" color="primary" @click="showLoginPass = !showLoginPass">{{ showLoginPass ? s.passHide : s.passShow }}</v-btn></template>
+            </v-text-field>
             <v-btn type="submit" color="primary" variant="elevated" block class="mb-4" :loading="authLoading">{{ s.loginSubmit }}</v-btn>
           </v-form>
 
@@ -384,8 +386,12 @@
             <v-text-field v-model="registerForm.name" :label="s.regName" required class="mb-4"></v-text-field>
             <v-text-field v-model="registerForm.surname" :label="s.regSurname" required class="mb-4"></v-text-field>
             <v-text-field v-model="registerForm.email" :label="s.regEmail" type="email" required class="mb-4"></v-text-field>
-            <v-text-field v-model="registerForm.password" :label="s.regPass" type="password" required class="mb-4"></v-text-field>
-            <v-text-field v-model="registerForm.password_confirmation" :label="s.regConfirm" type="password" required class="mb-4"></v-text-field>
+            <v-text-field v-model="registerForm.password" :label="s.regPass" :type="showRegisterPass ? 'text' : 'password'" required class="mb-4">
+              <template #append><v-btn variant="text" size="x-small" color="primary" @click="showRegisterPass = !showRegisterPass">{{ showRegisterPass ? s.passHide : s.passShow }}</v-btn></template>
+            </v-text-field>
+            <v-text-field v-model="registerForm.password_confirmation" :label="s.regConfirm" :type="showRegisterConfirmPass ? 'text' : 'password'" required class="mb-4">
+              <template #append><v-btn variant="text" size="x-small" color="primary" @click="showRegisterConfirmPass = !showRegisterConfirmPass">{{ showRegisterConfirmPass ? s.passHide : s.passShow }}</v-btn></template>
+            </v-text-field>
             <v-btn type="submit" color="primary" variant="elevated" block class="mb-4" :loading="authLoading">{{ s.regSubmit }}</v-btn>
           </v-form>
 
@@ -441,9 +447,15 @@
           <!-- Password change -->
           <v-form @submit.prevent="savePassword">
             <div class="text-body-2 font-weight-bold mb-2">{{ s.profileChangePass }}</div>
-            <v-text-field v-model="passwordForm.current_password" :label="s.profileCurrentPass" type="password" variant="outlined" density="compact" class="mb-2"></v-text-field>
-            <v-text-field v-model="passwordForm.password" :label="s.regPass" type="password" variant="outlined" density="compact" class="mb-2"></v-text-field>
-            <v-text-field v-model="passwordForm.password_confirmation" :label="s.regConfirm" type="password" variant="outlined" density="compact" class="mb-1"></v-text-field>
+            <v-text-field v-model="passwordForm.current_password" :label="s.profileCurrentPass" :type="showCurrentPass ? 'text' : 'password'" variant="outlined" density="compact" class="mb-2">
+              <template #append><v-btn variant="text" size="x-small" color="primary" @click="showCurrentPass = !showCurrentPass">{{ showCurrentPass ? s.passHide : s.passShow }}</v-btn></template>
+            </v-text-field>
+            <v-text-field v-model="passwordForm.password" :label="s.regPass" :type="showNewPass ? 'text' : 'password'" variant="outlined" density="compact" class="mb-2">
+              <template #append><v-btn variant="text" size="x-small" color="primary" @click="showNewPass = !showNewPass">{{ showNewPass ? s.passHide : s.passShow }}</v-btn></template>
+            </v-text-field>
+            <v-text-field v-model="passwordForm.password_confirmation" :label="s.regConfirm" :type="showConfirmPass ? 'text' : 'password'" variant="outlined" density="compact" class="mb-1">
+              <template #append><v-btn variant="text" size="x-small" color="primary" @click="showConfirmPass = !showConfirmPass">{{ showConfirmPass ? s.passHide : s.passShow }}</v-btn></template>
+            </v-text-field>
             <v-alert v-if="passwordError" type="error" variant="tonal" density="compact" class="mb-2">{{ passwordError }}</v-alert>
             <v-btn type="submit" color="secondary" variant="elevated" block :loading="passwordSaving">{{ s.profileSavePass }}</v-btn>
           </v-form>
@@ -501,6 +513,12 @@
         showLoginWindow: false,
         showRegisterWindow: false,
         showProfileDialog: false,
+        showLoginPass: false,
+        showRegisterPass: false,
+        showRegisterConfirmPass: false,
+        showCurrentPass: false,
+        showNewPass: false,
+        showConfirmPass: false,
         avatarUploading: false,
         profileForm: { name: '', surname: '', username: '' },
         profileError: '',
@@ -696,6 +714,7 @@
           timeMinAgo: (n) => `pirms ${n} min`,
           timeHourAgo: (n) => `pirms ${n} h`,
           timeDayAgo: (n) => `pirms ${n} d`,
+          passShow: 'Rādīt', passHide: 'Slēpt',
         }
         const en = {
           navTools:'Tools', navForum:'Forum', navAbout:'About Us', navContact:'Contact',
@@ -854,6 +873,7 @@
           timeMinAgo: (n) => `${n} min ago`,
           timeHourAgo: (n) => `${n} h ago`,
           timeDayAgo: (n) => `${n} d ago`,
+          passShow: 'Show', passHide: 'Hide',
         }
         return this.language === 'en' ? en : lv
       },
@@ -2435,7 +2455,7 @@
     color: #e0d8cc !important;
   }
 
-  /* App-level background */
+/* App-level background */
   .v-theme--dark .v-application__wrap { background-color: #1a1816; }
 
   /* Typography */

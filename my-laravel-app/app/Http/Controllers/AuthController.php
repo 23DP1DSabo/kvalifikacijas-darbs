@@ -44,14 +44,14 @@ class AuthController extends Controller
 
         if (!Auth::attempt($data, true)) {
             throw ValidationException::withMessages([
-                'email' => ['Nepareizs epasts vai parole.'],
+                'email' => ['Wrong email or password.'],
             ]);
         }
 
         if (Auth::user()->banned_at) {
             Auth::logout();
             throw ValidationException::withMessages([
-                'email' => ['Šis konts ir bloķēts.'],
+                'email' => ['This account is banned.'],
             ]);
         }
 
