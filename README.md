@@ -33,15 +33,52 @@ Produktivitātes izsekošanas un uzlabošanas tīmekļa vietne, kas apvieno vair
 
 ---
 
-## Lietošana
+## Instalēšana
 
-TaskForge ir pieejams tiešsaistē — nav nepieciešama instlaēšana vai lejupielāde.
+Projekts diemžēl šobrīd nav pieejams tiešsaistē, tāpēc, ja jūs vēlaties palaist to:
 
-1. Atveriet vietni pārlūkprogrammā ar saiti: TaskForge.io;
-2. Izveidojiet kontu, noklikšķinot uz **Pieslēgties → Reģistrēties**;
-3. Vietne gatava lietošanai.
+### Nepieciešamie rīki
 
-Valodu un krāsu motīvu var mainīt jebkurā brīdī, izmantojot **Pieejamības** izvēlni navigācijas joslā.
+- PHP >= 8.2
+- [Composer](https://getcomposer.org/)
+- Node.js >= 18 un npm
+
+### Soļi
+
+```bash
+# 1. Klonēt repozitoriju
+git clone <repozitorija-saite>
+cd my-laravel-app
+
+# 2. Instalēt PHP atkarības
+composer install
+
+# 3. Sagatavot vidi
+cp .env.example .env
+php artisan key:generate
+
+# 4. Izveidot datubāzi un palaist migrācijas
+php artisan migrate
+
+# 5. Instalēt Node atkarības
+npm install
+```
+
+### Palaišana
+
+Nepieciešami divi vienlaicīgi atvērti cmd termināļi:
+
+```bash
+# 1. cmd — Laravel izstrādes serveris
+php artisan serve
+```
+
+```bash
+# 2. cmd — Vite (automātiska priekšpuses atjaunošana)
+npm run dev
+```
+
+Pēc tam atveriet [http://localhost:8000](http://localhost:8000) savā pārlūkprogrammā.
 
 ---
 
